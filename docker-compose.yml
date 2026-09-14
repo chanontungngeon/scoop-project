@@ -1,0 +1,53 @@
+# docker compose up --build              bot + tunnel, using Ollama running on your Mac (fast, uses the GPU)
+# docker compose --profile ollama up      also runs Ollama in a container — set OLLAMA_URL=http://ollama:11434 in .env
+#                                         (on a Mac this is CPU-only and much slower)
+
+services:
+  scoop:
+    build: .
+    env_file: .env
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      PORT: ${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      - ./data:/app/data # users and bookings survive restarts and rebuilds
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # lets Linux reach Ollama on the host too; Docker Desktop has it already
+    init: true # passes Ctrl+C / docker stop through to Node
+    restart: unless-stopped
+
+  # Public HTTPS URL for the LINE webhook. Find it with: docker compose logs tunnel | grep trycloudflare
+  # The URL changes every time this container restarts; paste <url>/webhook into the LINE console again.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://scoop:${PORT:-3000}
+    depends_on:
+      - scoop
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [ollama]
+    volumes:
+      - ollama:/root/.ollama # downloaded models, so they're only pulled once
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+
+  # Downloads the model into the ollama container, then exits.
+  ollama-pull:
+    image: ollama/ollama:latest
+    profiles: [ollama]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-qwen3:14b}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  ollama:

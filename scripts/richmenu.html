@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 2500px; height: 1686px; overflow: hidden; }
+  body { background: #0d1120; font-family: -apple-system, "Sukhumvit Set", "Noto Sans Thai", system-ui, sans-serif; display: grid; grid-template-columns: 833px 834px 833px; grid-template-rows: 843px 843px; }
+  .tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; border: 6px solid #0d1120; background: #161c2e; border-radius: 48px; }
+  .tile.primary { background: linear-gradient(135deg, #00b300, #00c951); }
+  .icon { font-size: 230px; line-height: 1; }
+  .en { font-size: 104px; font-weight: 800; color: #e8eaf0; letter-spacing: -1px; }
+  .th { font-size: 76px; font-weight: 600; color: #8a93b2; }
+  .primary .en, .primary .th { color: #ffffff; }
+</style>
+</head>
+<body>
+  <div class="tile primary"><div class="icon">🔍</div><div class="en">Find events</div><div class="th">หาอะไรทำ</div></div>
+  <div class="tile"><div class="icon">📅</div><div class="en">My bookings</div><div class="th">การจองของฉัน</div></div>
+  <div class="tile"><div class="icon">🚕</div><div class="en">Get a ride</div><div class="th">เรียกรถไปงาน</div></div>
+  <div class="tile"><div class="icon">🗓️</div><div class="en">Calendar</div><div class="th">ปฏิทิน</div></div>
+  <div class="tile"><div class="icon">👤</div><div class="en">Profile</div><div class="th">โปรไฟล์</div></div>
+  <div class="tile"><div class="icon">🌐</div><div class="en">Language</div><div class="th">ภาษา · 语言 · भाषा</div></div>
+</body>
+</html>
