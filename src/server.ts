@@ -17,7 +17,7 @@ import { M, T, detectLang, isLang, localeOf } from "./i18n.ts";
 import type { Lang } from "./i18n.ts";
 import { mapPage } from "./map.ts";
 import { goPage } from "./go.ts";
-import { HISTORY_TURNS, runAgent } from "./agent.ts";
+import { HISTORY_TURNS, MAX_INPUT_CHARS, MAX_TICKETS, redactNumbers, runAgent } from "./agent.ts";
 import type { Facts, ToolHandlers } from "./agent.ts";
 import { bkkDate, dayRange, rangeFor, windowFrom } from "./dates.ts";
 import { estimateRide } from "./ride.ts";
@@ -389,6 +389,7 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       if (!e) return noEvent();
       if (!seen(e)) return notSeen();
       const n = int(args.tickets);
+      if (n && n > MAX_TICKETS) return { result: { error: `At most ${MAX_TICKETS} tickets per booking. Suggest calling the venue for bigger groups.` } };
       const out = book(userId, user, e, lang, n && n > 0 ? n : 1);
       const { messages, ...result } = out;
       // A failed booking is explained by the agent in its own words; only a ticket is worth a card.
@@ -401,6 +402,7 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       if (!b || !e || b.userId !== userId) return { result: { error: "No active booking with that code" } };
       if (hasEnded(e)) return { result: { error: "That event has already finished" } };
       const n = Math.max(0, int(args.tickets) ?? 0);
+      if (n > MAX_TICKETS) return { result: { error: `At most ${MAX_TICKETS} tickets per booking. Suggest calling the venue for bigger groups.` } };
       const r = changeTickets(b, e, n);
       if (!r.ok) return { result: { error: "Not enough seats", seats_available: r.seats_available } };
       if (n === 0) return { result: { status: "cancelled", code: b.code }, messages: myBookings(bookingViews(userId), lang) };
@@ -445,12 +447,13 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
 }
 
 // One typed message through the agent: its reply first, then the cards its tools produced (LINE allows 5 messages).
-async function agentReply(text: string, userId: string, user: User, chosenLang: Lang, publicBase: string | undefined) {
+async function agentReply(typed: string, userId: string, user: User, chosenLang: Lang, publicBase: string | undefined) {
+  const text = redactNumbers(typed);
   // Reply in what they typed: Thai, Chinese or Hindi script, or English for Latin letters, even if they picked another language.
   const lang = detectLang(text) ?? (/[a-z]/i.test(text) ? "en" : chosenLang);
   const out = await runAgent(text, { facts: facts(userId, user, lang), history: user.chat ?? [], tools: agentTools(userId, user, lang, publicBase) });
   user.refining = undefined;
-  user.chat = [...(user.chat ?? []), { role: "user" as const, content: text }, ...(out.reply ? [{ role: "assistant" as const, content: out.reply }] : [])].slice(-HISTORY_TURNS);
+  user.chat = [...(user.chat ?? []), { role: "user" as const, content: text.slice(0, MAX_INPUT_CHARS) }, ...(out.reply ? [{ role: "assistant" as const, content: out.reply }] : [])].slice(-HISTORY_TURNS);
   console.log(JSON.stringify({ text, reply: out.reply, calls: out.calls.map((c) => ({ tool: c.name, args: c.args })) }));
   const messages = [...(out.reply ? [textMessage(out.reply.slice(0, 5000))] : []), ...out.cards].slice(0, 5);
   return { ...out, messages: messages.length ? messages : [textMessage(T[lang].sorry)] };

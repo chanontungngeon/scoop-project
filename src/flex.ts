@@ -10,11 +10,17 @@ import type { Match, Reason } from "./match.ts";
 export type { Lang };
 
 const TZ = "Asia/Bangkok";
-export const GREEN = "#00c951";
-export const CARD = "#161c2e";
-export const TEXT = "#e8eaf0";
-export const MUTED = "#8a93b2";
-export const SUBTLE = "#252d47"; // secondary buttons on dark cards
+// Light, LINE-like look: white cards, dark text, LINE green for the main action.
+export const GREEN = "#06C755"; // buttons and badges with white text
+export const GREEN_TEXT = "#07873D"; // green text on white; GREEN itself is too light to read at small sizes
+export const CARD = "#FFFFFF";
+export const SOFT = "#F4F6F8"; // soft panels and tiles on a white card
+export const SOFT_GREEN = "#EAF8EF"; // gentle highlight: map card, "not quite" card, soft green tiles
+export const TEXT = "#1F2933";
+export const MUTED = "#6B7280";
+export const SUBTLE = "#EEF1F4"; // secondary buttons: use with style "secondary" so the label is dark
+export const LINE_SEP = "#E5E7EB";
+export const WARM = "#B45309"; // amber text for guide lines and hints
 
 // Event photos: the local copy in assets/ once the public (tunnel) URL is known, else the remote original.
 // Wikimedia refuses requests without a User-Agent, so the local copy is the safer one for LINE to fetch.
@@ -35,15 +41,16 @@ export const VIBES: Record<VibeId, { emoji: string; name: Record<Lang, string>; 
 export const vibeLabel = (id: VibeId, lang: Lang) => `${VIBES[id].emoji} ${VIBES[id].name[lang]}`;
 
 export const CATEGORY_STYLE: Record<string, { emoji: string; color: string }> = {
-  art: { emoji: "🎨", color: "#ff6b6b" },
-  workshop: { emoji: "✂️", color: "#ff9f43" },
-  food: { emoji: "🍜", color: "#ffd166" },
-  music: { emoji: "🎤", color: "#a855f7" },
-  market: { emoji: "🛍️", color: "#06b6d4" },
-  comedy: { emoji: "😂", color: "#f472b6" },
-  film: { emoji: "🎬", color: "#60a5fa" },
-  nightlife: { emoji: "🎧", color: "#8b5cf6" },
-  sports: { emoji: "🏃", color: "#34d399" },
+  // Deep enough that white text on them (price badges, map pins) stays readable.
+  art: { emoji: "🎨", color: "#E5484D" },
+  workshop: { emoji: "✂️", color: "#EA6C1E" },
+  food: { emoji: "🍜", color: "#D98A00" },
+  music: { emoji: "🎤", color: "#9B51E0" },
+  market: { emoji: "🛍️", color: "#0E8FB0" },
+  comedy: { emoji: "😂", color: "#E0457B" },
+  film: { emoji: "🎬", color: "#3B7DDD" },
+  nightlife: { emoji: "🎧", color: "#6D5BD0" },
+  sports: { emoji: "🏃", color: "#12A36A" },
 };
 export const styleOf = (e: Event) => CATEGORY_STYLE[e.category] ?? { emoji: "📌", color: GREEN };
 
@@ -107,14 +114,14 @@ export function languagePicker(backTo?: Lang) {
           { type: "text", text: CHOOSE_LANGUAGE, color: TEXT, weight: "bold", align: "center", wrap: true, margin: "sm" },
           ...LANGS.map((l) => ({
             type: "button",
-            style: "primary",
-            color: GREEN,
+            style: "secondary",
+            color: SUBTLE,
             height: "sm",
             margin: "md",
             action: { type: "postback", label: `${l.flag} ${l.name}`, data: `action=lang&l=${l.id}`, displayText: `${l.flag} ${l.name}` },
           })),
           ...(backTo
-            ? [{ type: "button", style: "primary", color: SUBTLE, height: "sm", margin: "lg", action: { type: "postback", label: M[backTo].back, data: `action=menu&lang=${backTo}`, displayText: M[backTo].back } }]
+            ? [{ type: "button", style: "secondary", color: SUBTLE, height: "sm", margin: "lg", action: { type: "postback", label: M[backTo].back, data: `action=menu&lang=${backTo}`, displayText: M[backTo].back } }]
             : []),
         ],
       },
@@ -166,7 +173,8 @@ export function matchReasonText(r: Reason, lang: Lang): string {
   }
 }
 
-const matchColor = (score: number) => (score >= 80 ? GREEN : score >= 60 ? "#f2a900" : "#6b7494");
+const matchColor = (score: number) => (score >= 80 ? GREEN : score >= 60 ? "#E09A00" : "#8A94A6");
+const matchTextColor = (score: number) => (score >= 80 ? GREEN_TEXT : score >= 60 ? WARM : MUTED);
 
 export function eventBubble(e: Event, lang: Lang, tickets = 1, match?: Match) {
   const t = T[lang];
@@ -219,12 +227,12 @@ export function eventBubble(e: Event, lang: Lang, tickets = 1, match?: Match) {
       spacing: "sm",
       contents: [
         { type: "text", text: `${s.emoji} ${title(e, lang)}`, weight: "bold", size: "md", wrap: true, color: TEXT },
-        ...(match?.reasons.length ? [{ type: "text", text: `✨ ${match.reasons.map((r) => matchReasonText(r, lang)).join(" · ")}`, size: "xxs", color: matchColor(match.score), wrap: true }] : []),
+        ...(match?.reasons.length ? [{ type: "text", text: `✨ ${match.reasons.map((r) => matchReasonText(r, lang)).join(" · ")}`, size: "xxs", color: matchTextColor(match.score), wrap: true }] : []),
         { type: "text", text: when(e, lang), size: "xs", color: MUTED, wrap: true },
-        ...(e.guide ? [{ type: "text", text: guideLine(e, lang)!, size: "xs", color: "#ffd166", wrap: true }] : []),
+        ...(e.guide ? [{ type: "text", text: guideLine(e, lang)!, size: "xs", color: WARM, wrap: true }] : []),
         { type: "text", text: `📍 ${venue(e, lang)}`, size: "xs", color: MUTED, wrap: true },
         { type: "text", text: `🚆 ${transit(e, lang)}`, size: "xs", color: MUTED, wrap: true },
-        { type: "text", text: t.spotsLeft(e.seats_remaining), size: "xxs", color: GREEN, margin: "md" },
+        { type: "text", text: t.spotsLeft(e.seats_remaining), size: "xxs", color: GREEN_TEXT, weight: "bold", margin: "md" },
       ],
     },
     footer: {
@@ -258,7 +266,7 @@ function mapBubble(events: Event[], lang: Lang, mapUrl: string) {
   return {
     type: "bubble",
     size: "kilo",
-    styles: { body: { backgroundColor: "#0f1629" } },
+    styles: { body: { backgroundColor: SOFT_GREEN } },
     body: {
       type: "box",
       layout: "vertical",
@@ -326,8 +334,8 @@ export const telUri = (phone: string) => `tel:${phone.replace(/\s*(p|ext\.?|x)\s
 
 function venueButtons(e: Event, code: string, tickets: number, lang: Lang) {
   return [
-    { type: "button", style: "primary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].addToCalendar, uri: googleCalendarUrl(e, code, tickets, lang) } },
-    ...(e.venue.phone ? [{ type: "button", style: "primary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].callVenue, uri: telUri(e.venue.phone) } }] : []),
+    { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].addToCalendar, uri: googleCalendarUrl(e, code, tickets, lang) } },
+    ...(e.venue.phone ? [{ type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].callVenue, uri: telUri(e.venue.phone) } }] : []),
   ];
 }
 
@@ -356,8 +364,8 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
         contents: [
           { type: "text", text: "🎉", size: "3xl", align: "center" },
           { type: "text", text: t.booked, weight: "bold", size: "lg", align: "center", color: TEXT },
-          { type: "separator", color: "#2a3050" },
-          { type: "text", text: `${s.emoji} ${title(e, lang)}`, weight: "bold", color: GREEN, wrap: true },
+          { type: "separator", color: LINE_SEP },
+          { type: "text", text: `${s.emoji} ${title(e, lang)}`, weight: "bold", color: GREEN_TEXT, wrap: true },
           row(t.when, when(e, lang)),
           row(t.where, venue(e, lang)),
           row(t.price, `${price(e, lang)} · ${M[lang].ticketsN(tickets)}`),
@@ -365,7 +373,7 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
           ...(e.guide ? [row(t.guideMeet, meetingPoint(e, lang)!), row("🧭", guideLine(e, lang)!.replace(/^🧭 /, ""))] : []),
           ...(e.venue.phone ? [row(t.phoneL, e.venue.phone)] : []),
           ...(e.venue.contact_person ? [row(t.contactL, e.venue.contact_person)] : []),
-          { type: "separator", color: "#2a3050" },
+          { type: "separator", color: LINE_SEP },
           { type: "text", text: t.demoNote, size: "xxs", color: MUTED, align: "center", wrap: true },
         ],
       },
@@ -377,8 +385,8 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
         contents: [
           { type: "button", style: "primary", color: GREEN, height: "sm", action: { type: "postback", label: M[lang].bookMore, data: `action=find&lang=${lang}`, displayText: M[lang].bookMore } },
           ...venueButtons(e, code, tickets, lang),
-          { type: "button", style: "primary", color: SUBTLE, height: "sm", action: { type: "postback", label: t.ride, data: `action=ride&id=${e.id}&lang=${lang}`, displayText: t.ride } },
-          { type: "button", style: "primary", color: SUBTLE, height: "sm", action: { type: "postback", label: M[lang].myBookings, data: `action=bookings&lang=${lang}`, displayText: M[lang].myBookings } },
+          { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "postback", label: t.ride, data: `action=ride&id=${e.id}&lang=${lang}`, displayText: t.ride } },
+          { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "postback", label: M[lang].myBookings, data: `action=bookings&lang=${lang}`, displayText: M[lang].myBookings } },
         ],
       },
     },
@@ -401,7 +409,7 @@ export { hhmm };
 
 // Ways out of a getting-there screen: a Menu button on the card, and shortcuts under the last card.
 const menuButton = (lang: Lang) => ({
-  type: "button", style: "primary", color: SUBTLE, height: "sm", margin: "sm",
+  type: "button", style: "secondary", color: SUBTLE, height: "sm", margin: "sm",
   action: { type: "postback", label: M[lang].menu, data: `action=menu&lang=${lang}`, displayText: M[lang].menu },
 });
 
@@ -423,7 +431,7 @@ export function rideButtons(e: Event, from: Point, lang: Lang, withReminder: boo
     { type: "button", style: "primary", color: "#06c755", height: "sm", margin: "sm", action: { type: "uri", label: t.openLineman, uri: publicBase ? rideAppUrl(publicBase, "lineman", e, lang) : LINEMAN_URL } },
     { type: "button", style: "secondary", height: "sm", margin: "sm", action: { type: "uri", label: t.directions, uri: directionsUrl(from, e) } },
     ...(withReminder
-      ? [{ type: "button", style: "link", color: GREEN, height: "sm", margin: "sm", action: { type: "postback", label: t.remindLeave, data: `action=leave&id=${e.id}&lang=${lang}` } }]
+      ? [{ type: "button", style: "link", color: GREEN_TEXT, height: "sm", margin: "sm", action: { type: "postback", label: t.remindLeave, data: `action=leave&id=${e.id}&lang=${lang}` } }]
       : []),
   ];
 }
@@ -437,7 +445,7 @@ export function rideCard(e: Event, from: Point, est: RideEstimate, lang: Lang, n
     layout: "horizontal",
     contents: [
       { type: "text", text: k, size: "xs", color: MUTED, flex: 4, wrap: true },
-      { type: "text", text: v, size: strong ? "sm" : "xs", color: strong ? GREEN : TEXT, weight: strong ? "bold" : "regular", flex: 5, wrap: true, align: "end" },
+      { type: "text", text: v, size: strong ? "sm" : "xs", color: strong ? GREEN_TEXT : TEXT, weight: strong ? "bold" : "regular", flex: 5, wrap: true, align: "end" },
     ],
   });
   return {
@@ -445,7 +453,7 @@ export function rideCard(e: Event, from: Point, est: RideEstimate, lang: Lang, n
     altText: `${t.rideTitle}: ${title(e, lang)}`,
     contents: {
       type: "bubble",
-      size: "kilo",
+      size: "mega", // same width as transitCard, which is sent right after it
       styles: { body: { backgroundColor: CARD }, footer: { backgroundColor: CARD } },
       body: {
         type: "box",
@@ -453,15 +461,15 @@ export function rideCard(e: Event, from: Point, est: RideEstimate, lang: Lang, n
         spacing: "sm",
         contents: [
           { type: "text", text: t.rideTitle, weight: "bold", size: "lg", color: TEXT },
-          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, size: "sm", color: GREEN, wrap: true },
+          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, size: "sm", color: GREEN_TEXT, wrap: true },
           { type: "text", text: `📍 ${venue(e, lang)} · ${when(e, lang)}`, size: "xxs", color: MUTED, wrap: true },
-          { type: "separator", color: "#2a3050", margin: "md" },
+          { type: "separator", color: LINE_SEP, margin: "md" },
           row(t.distance, `~${est.roadKm.toFixed(1)} ${t.km}`),
           row(t.travelTime, `~${est.minutes} ${t.min}`),
           row(t.taxiFare, baht(est.taxi)),
           row(t.appFare, baht(est.app)),
           row(t.leaveBy, leave, true),
-          { type: "separator", color: "#2a3050", margin: "md" },
+          { type: "separator", color: LINE_SEP, margin: "md" },
           { type: "text", text: t.estimateNote, size: "xxs", color: MUTED, wrap: true },
         ],
       },
@@ -524,12 +532,12 @@ export function transitCard(e: Event, from: Point, plan: TransitPlan | null, lan
           { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, size: "xs", color: MUTED, wrap: true, margin: "xs" },
           ...(plan
             ? [
-                { type: "text", text: plan.walkOnly ? t.walkOnly(plan.minutes) : t.transitSummary(plan.minutes, plan.fare), size: "md", weight: "bold", color: GREEN, wrap: true, margin: "md" },
+                { type: "text", text: plan.walkOnly ? t.walkOnly(plan.minutes) : t.transitSummary(plan.minutes, plan.fare), size: "md", weight: "bold", color: GREEN_TEXT, wrap: true, margin: "md" },
                 ...(leave ? [{ type: "text", text: `${t.leaveBy} ${leave}`, size: "xs", color: TEXT, margin: "xs" }] : []),
-                { type: "separator", color: "#2a3050", margin: "md" },
+                { type: "separator", color: LINE_SEP, margin: "md" },
                 ...steps,
                 ...(plan.walkOnly ? [] : [
-                  { type: "separator", color: "#2a3050", margin: "lg" },
+                  { type: "separator", color: LINE_SEP, margin: "lg" },
                   { type: "text", text: t.transitNote, size: "xxs", color: MUTED, wrap: true, margin: "md" },
                 ]),
               ]
@@ -539,7 +547,7 @@ export function transitCard(e: Event, from: Point, plan: TransitPlan | null, lan
       footer: {
         type: "box",
         layout: "vertical",
-        contents: [{ type: "button", style: "primary", color: SUBTLE, height: "sm", action: { type: "uri", label: t.transitMaps, uri: mapsTransit } }, menuButton(lang)],
+        contents: [{ type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: t.transitMaps, uri: mapsTransit } }, menuButton(lang)],
       },
     },
   };
@@ -590,11 +598,11 @@ export function reminderCard(e: Event, code: string, tickets: number, lang: Lang
         spacing: "sm",
         contents: [
           { type: "text", text: t.reminder, weight: "bold", size: "lg", color: TEXT, wrap: true },
-          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, weight: "bold", color: GREEN, wrap: true },
+          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, weight: "bold", color: GREEN_TEXT, wrap: true },
           line(`🕒 ${when(e, lang)}`, TEXT),
           line(`📍 ${venue(e, lang)}`),
           line(`🚆 ${transit(e, lang)}`),
-          ...(e.guide ? [line(guideLine(e, lang)!, "#ffd166"), line(`🤝 ${t.guideMeet}: ${meetingPoint(e, lang)}`, TEXT)] : []),
+          ...(e.guide ? [line(guideLine(e, lang)!, WARM), line(`🤝 ${t.guideMeet}: ${meetingPoint(e, lang)}`, TEXT)] : []),
           ...(e.venue.phone ? [line(`📞 ${e.venue.phone}${e.venue.contact_person ? ` · ${e.venue.contact_person}` : ""}`)] : []),
           line(`🎟️ ${M[lang].ticketsN(tickets)} · ${t.bookingCode} ${code}`),
         ],

@@ -59,16 +59,16 @@ export function goPage(app: RideApp, e: Event, lang: Lang, lineChatUrl?: string)
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scoop · ${esc(name)}</title>
 <style>
-  :root { color-scheme: dark; }
+  :root { color-scheme: light; }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 24px 16px; font: 15px/1.45 -apple-system, "Sukhumvit Set", "Noto Sans Thai", system-ui, sans-serif; background: #0d1120; color: #e8eaf0; }
-  .card { max-width: 420px; margin: 0 auto; background: #161c2e; border: 1px solid #252d47; border-radius: 20px; padding: 20px; }
+  body { margin: 0; padding: 24px 16px; font: 15px/1.45 -apple-system, "Sukhumvit Set", "Noto Sans Thai", system-ui, sans-serif; background: #f4f6f8; color: #1f2933; }
+  .card { max-width: 420px; margin: 0 auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; box-shadow: 0 1px 3px rgba(16,24,40,.06); }
   h1 { font-size: 20px; margin: 0 0 4px; }
   #hint { margin: 10px 2px 4px; }
-  .muted { color: #8a93b2; font-size: 13px; }
-  .dest { margin: 16px 0; padding: 12px; border-radius: 12px; background: #1e2535; }
-  .btn { display: block; width: 100%; margin-top: 10px; padding: 13px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; text-align: center; text-decoration: none; color: #fff; background: #252d47; cursor: pointer; }
-  .primary { background: ${color}; }
+  .muted { color: #6b7280; font-size: 13px; }
+  .dest { margin: 16px 0; padding: 12px; border-radius: 12px; background: #f4f6f8; }
+  .btn { display: block; width: 100%; margin-top: 10px; padding: 13px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; text-align: center; text-decoration: none; color: #1f2933; background: #eef1f4; cursor: pointer; }
+  .primary { background: ${color}; color: #fff; }
   #fallback[hidden] { display: none; }
 </style>
 </head>
@@ -90,7 +90,7 @@ export function goPage(app: RideApp, e: Event, lang: Lang, lineChatUrl?: string)
     <a class="btn" href="${esc(links.iosStore)}">App Store</a>
     <a class="btn" href="${esc(links.androidStore)}">Google Play</a>
   </div>
-  ${lineChatUrl ? `<a class="btn" style="margin-top:18px;background:#1e2535" href="${esc(lineChatUrl)}">${esc(t.backToLine)}</a>` : ""}
+  ${lineChatUrl ? `<a class="btn" style="margin-top:18px" href="${esc(lineChatUrl)}">${esc(t.backToLine)}</a>` : ""}
 </div>
 <script>
   const android = /Android/i.test(navigator.userAgent);

@@ -1,5 +1,5 @@
 import type { Event } from "./filter.ts";
-import { CARD, GREEN, MUTED, SUBTLE, TEXT, VIBES, googleCalendarUrl, imageUrl, price, styleOf, textMessage, title, vibeLabel, venue, when } from "./flex.ts";
+import { CARD, GREEN, GREEN_TEXT, LINE_SEP, MUTED, SOFT, SOFT_GREEN, SUBTLE, TEXT, VIBES, WARM, googleCalendarUrl, imageUrl, price, styleOf, textMessage, title, vibeLabel, venue, when } from "./flex.ts";
 import type { VibeId } from "./flex.ts";
 import { LANGS, M, T, localeOf } from "./i18n.ts";
 import type { Lang } from "./i18n.ts";
@@ -14,9 +14,10 @@ const pb = (label: string, data: string, displayText?: string): QuickItem => ({
   action: displayText ? { type: "postback", label, data, displayText } : { type: "postback", label, data },
 });
 
+// Grey buttons use LINE's "secondary" style so their label is dark; coloured ones keep white labels.
 const button = (label: string, data: string, color = SUBTLE) => ({
   type: "button",
-  style: "primary",
+  style: color === SUBTLE ? "secondary" : "primary",
   color,
   height: "sm",
   action: { type: "postback", label, data, displayText: label },
@@ -38,7 +39,7 @@ export function menuCard(lang: Lang, headline?: string) {
         layout: "vertical",
         spacing: "sm",
         contents: [
-          ...(headline ? [{ type: "text", text: headline, color: GREEN, weight: "bold", wrap: true }] : []),
+          ...(headline ? [{ type: "text", text: headline, color: GREEN_TEXT, weight: "bold", wrap: true }] : []),
           { type: "text", text: m.menuTitle, color: TEXT, weight: "bold", size: "md", wrap: true, margin: headline ? "md" : "none" },
           { ...button(m.find, `action=find&lang=${lang}`, GREEN), margin: "lg" },
           button(m.myBookings, `action=bookings&lang=${lang}`),
@@ -71,8 +72,7 @@ function whenText(w: Wizard, lang: Lang): string | null {
   return w.when === "date" ? null : M[lang].whenLabel[w.when];
 }
 
-const ACCENT = "#2f3a5c";
-const HINT = "#ffd166";
+const HINT = WARM;
 
 const tapAction = (label: string, data: string) => ({ type: "postback", label: label.slice(0, 20), data, displayText: label });
 
@@ -83,15 +83,17 @@ const tile = (icon: string, label: string, action: Record<string, unknown>) => (
   spacing: "xs",
   paddingAll: "10px",
   cornerRadius: "12px",
-  backgroundColor: SUBTLE,
+  backgroundColor: SOFT,
+  borderWidth: "1px",
+  borderColor: LINE_SEP,
   action,
   contents: [
     { type: "text", text: icon, size: "xl", align: "center" },
-    { type: "text", text: label, size: "xs", weight: "bold", color: "#ffffff", align: "center", wrap: true },
+    { type: "text", text: label, size: "xs", weight: "bold", color: TEXT, align: "center", wrap: true },
   ],
 });
 
-const wideTile = (label: string, action: Record<string, unknown>, color: string) => ({
+const wideTile = (label: string, action: Record<string, unknown>, color: string, textColor = "#ffffff") => ({
   type: "box",
   layout: "vertical",
   paddingAll: "12px",
@@ -99,8 +101,9 @@ const wideTile = (label: string, action: Record<string, unknown>, color: string)
   backgroundColor: color,
   margin: "sm",
   action,
-  contents: [{ type: "text", text: label, size: "sm", weight: "bold", color: "#ffffff", align: "center", wrap: true }],
+  contents: [{ type: "text", text: label, size: "sm", weight: "bold", color: textColor, align: "center", wrap: true }],
 });
+const softTile = (label: string, action: Record<string, unknown>) => wideTile(label, action, SOFT_GREEN, GREEN_TEXT);
 
 function grid(tiles: unknown[], perRow: number) {
   const rows = [];
@@ -115,7 +118,7 @@ const progress = (step: number) => ({
   layout: "horizontal",
   spacing: "xs",
   margin: "sm",
-  contents: [0, 1].map((i) => ({ type: "box", layout: "vertical", height: "5px", cornerRadius: "3px", backgroundColor: i <= step ? GREEN : SUBTLE, contents: [{ type: "filler" }] })),
+  contents: [0, 1].map((i) => ({ type: "box", layout: "vertical", height: "5px", cornerRadius: "3px", backgroundColor: i <= step ? GREEN : LINE_SEP, contents: [{ type: "filler" }] })),
 });
 
 function stepCard(lang: Lang, step: number, title: string, subtitle: string, body: unknown[], hint: boolean) {
@@ -139,7 +142,7 @@ function stepCard(lang: Lang, step: number, title: string, subtitle: string, bod
           { type: "box", layout: "vertical", margin: "md", contents: body },
           { type: "text", text: m.typeHint, size: "xxs", color: MUTED, wrap: true, margin: "lg" },
           // A visible Back button: quick replies hide behind the keyboard on many phones.
-          wideTile(m.back, tapAction(m.back, step > 0 ? `action=wiz&back=1&lang=${lang}` : `action=menu&lang=${lang}`), "#1e2535"),
+          wideTile(m.back, tapAction(m.back, step > 0 ? `action=wiz&back=1&lang=${lang}` : `action=menu&lang=${lang}`), SOFT, TEXT),
         ],
       },
     },
@@ -159,7 +162,7 @@ export function whenCard(lang: Lang, today: string, maxDate: string, hint = fals
     when("🗓️", "this_week"),
     tile("📆", m.pickDate.replace(/^📆\s*/, ""), { type: "datetimepicker", label: m.pickDate.slice(0, 20), data: data("date"), mode: "date", initial: today, min: today, max: maxDate }),
   ];
-  return stepCard(lang, 0, m.whenTitle, m.whenSub, [...grid(tiles, 3), wideTile(`🤷 ${m.whenLabel.any}`, tapAction(m.whenLabel.any, data("any")), ACCENT)], hint);
+  return stepCard(lang, 0, m.whenTitle, m.whenSub, [...grid(tiles, 3), softTile(`🤷 ${m.whenLabel.any}`, tapAction(m.whenLabel.any, data("any")))], hint);
 }
 
 export function typeCard(w: Wizard, user: User, lang: Lang, hint = false) {
@@ -169,7 +172,7 @@ export function typeCard(w: Wizard, user: User, lang: Lang, hint = false) {
   const vibe = user.vibe ? [wideTile(m.myVibe(vibeLabel(user.vibe, lang)), tapAction(vibeLabel(user.vibe, lang), data("vibe")), GREEN)] : [];
   const cats = Object.keys(m.cat).map((c) => tile(catEmoji(c), m.cat[c], tapAction(`${catEmoji(c)} ${m.cat[c]}`, data(c))));
   const subtitle = picked ? `📅 ${picked} · ${m.typeSub}` : m.typeSub;
-  return stepCard(lang, 1, m.typeTitle, subtitle, [...vibe, ...grid(cats, 3), wideTile(m.surprise, tapAction(m.surprise, data("any")), ACCENT)], hint);
+  return stepCard(lang, 1, m.typeTitle, subtitle, [...vibe, ...grid(cats, 3), softTile(m.surprise, tapAction(m.surprise, data("any")))], hint);
 }
 
 // The last card in the results, and the card under "no matches": go back a step, start over, or leave.
@@ -178,7 +181,7 @@ export function notQuiteBubble(lang: Lang) {
   return {
     type: "bubble",
     size: "kilo",
-    styles: { body: { backgroundColor: "#0f1629" } },
+    styles: { body: { backgroundColor: SOFT_GREEN } },
     body: {
       type: "box",
       layout: "vertical",
@@ -244,7 +247,7 @@ function bookingBubble({ b, e, ended }: BookingView, lang: Lang) {
           type: "text",
           text: `🎟️ ${m.ticketsN(b.tickets)} · ${price(e, lang)} · ${b.code}${ended ? ` · ${m.ended}` : ""}`,
           size: "xs",
-          color: ended ? MUTED : GREEN,
+          color: ended ? MUTED : GREEN_TEXT,
           wrap: true,
           margin: "md",
         },
@@ -317,7 +320,7 @@ export function cancelConfirm(b: Booking, e: Event, lang: Lang) {
         spacing: "sm",
         contents: [
           { type: "text", text: m.cancelQ, weight: "bold", size: "lg", color: TEXT, wrap: true },
-          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, color: GREEN, wrap: true, margin: "md" },
+          { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, color: GREEN_TEXT, weight: "bold", wrap: true, margin: "md" },
           { type: "text", text: `${when(e, lang)} · ${m.ticketsN(b.tickets)}`, size: "xs", color: MUTED, wrap: true },
           { ...button(b.tickets > 1 ? m.cancelAllN(b.tickets) : m.yesCancel, `action=cancelyes&c=${b.code}&lang=${lang}`, RED), margin: "lg" },
           ...(b.tickets > 1 ? [button(m.cancelSome, `action=cancelsome&c=${b.code}&lang=${lang}`)] : []),
@@ -343,7 +346,7 @@ export function calendarView(views: BookingView[], lang: Lang) {
   for (const { b, e, ended } of views) {
     const day = dayFmt.format(new Date(e.start_datetime));
     if (day !== lastDay) {
-      rows.push({ type: "text", text: day, weight: "bold", color: ended ? MUTED : GREEN, size: "sm", margin: rows.length ? "lg" : "md" });
+      rows.push({ type: "text", text: day, weight: "bold", color: ended ? MUTED : GREEN_TEXT, size: "sm", margin: rows.length ? "lg" : "md" });
       lastDay = day;
     }
     rows.push({
@@ -359,13 +362,13 @@ export function calendarView(views: BookingView[], lang: Lang) {
           spacing: "md",
           paddingAll: "8px",
           cornerRadius: "8px",
-          backgroundColor: "#1e2535",
+          backgroundColor: SOFT,
           flex: 1,
           action: { type: "uri", label: "Google Calendar", uri: googleCalendarUrl(e, b.code, b.tickets, lang) },
           contents: [
             { type: "text", text: hm.format(new Date(e.start_datetime)), size: "xs", color: MUTED, flex: 0 },
             { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)} · ${m.ticketsN(b.tickets)}`, size: "xs", color: ended ? MUTED : TEXT, wrap: true, flex: 1 },
-            { type: "text", text: "＋📅", size: "xs", color: GREEN, flex: 0 },
+            { type: "text", text: "＋📅", size: "xs", color: GREEN_TEXT, flex: 0 },
           ],
         },
         ...(ended
@@ -445,7 +448,7 @@ export function profileCard(lang: Lang, user: User, profile: { displayName?: str
         layout: "vertical",
         contents: [
           header,
-          { type: "separator", color: "#2a3050", margin: "lg" },
+          { type: "separator", color: LINE_SEP, margin: "lg" },
           row(m.languageL, LANGS.find((l) => l.id === lang)!.name),
           row(m.vibeL, user.vibe ? vibeLabel(user.vibe, lang) : m.notSet),
           row(m.usualBudgetL, user.usualBudget === undefined ? m.notSet : budgetLabel(user.usualBudget, lang)),

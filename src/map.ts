@@ -5,11 +5,11 @@ import type { Lang } from "./i18n.ts";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-// One page, opened from the chat inside LINE's in-app browser: every result as a pin on a dark map.
+// One page, opened from the chat inside LINE's in-app browser: every result as a pin on a map.
 export function mapPage(events: Event[], lang: Lang): string {
   const t = T[lang];
   const pins = events.map((e) => {
-    const s = CATEGORY_STYLE[e.category] ?? { emoji: "📌", color: "#00c951" };
+    const s = CATEGORY_STYLE[e.category] ?? { emoji: "📌", color: "#06C755" };
     return { id: e.id, lat: e.venue.lat, lng: e.venue.lng, emoji: s.emoji, color: s.color, title: title(e, lang), price: price(e, lang) };
   });
 
@@ -35,29 +35,27 @@ export function mapPage(events: Event[], lang: Lang): string {
 <title>Scoop · ${esc(t.map)}</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-  :root { color-scheme: dark; }
+  :root { color-scheme: light; }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 14px/1.4 -apple-system, "Sukhumvit Set", "Noto Sans Thai", system-ui, sans-serif; background: #0d1120; color: #e8eaf0; }
-  header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; background: #0f1629; border-bottom: 1px solid #1e2535; }
-  header .logo { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg,#00b300,#00c951); }
-  header small { color: #00c951; display: block; }
-  #map { height: 52vh; background: #0d1120; }
-  /* OpenStreetMap tiles are light; invert them to match the dark design. Pins are in a different pane, so they keep their colours. */
-  .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.6); }
-  .leaflet-control-attribution { background: rgba(13,17,32,.8) !important; color: #8a93b2; }
-  .leaflet-control-attribution a { color: #00c951; }
+  body { margin: 0; font: 14px/1.4 -apple-system, "Sukhumvit Set", "Noto Sans Thai", system-ui, sans-serif; background: #f4f6f8; color: #1f2933; }
+  header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+  header .logo { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #eaf8ef; }
+  header small { color: #6b7280; display: block; }
+  #map { height: 52vh; background: #e9eef2; }
+  .leaflet-control-attribution { background: rgba(255,255,255,.85) !important; color: #6b7280; }
+  .leaflet-control-attribution a { color: #07873d; }
   .list { padding: 12px 16px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .card { display: flex; width: 100%; min-width: 0; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #161c2e; border: 1px solid #252d47; cursor: pointer; }
-  .card.active { border-color: #00c951; }
-  .dot { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; border: 2px solid #fff; }
+  .card { display: flex; width: 100%; min-width: 0; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #fff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(16,24,40,.06); cursor: pointer; }
+  .card.active { border-color: #06c755; box-shadow: 0 0 0 2px #eaf8ef; }
+  .dot { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(16,24,40,.15); }
   .info { flex: 1; min-width: 0; display: grid; }
-  .info small { color: #8a93b2; }
+  .info small { color: #6b7280; }
   .info b, .info small { overflow-wrap: anywhere; }
   .acts { flex: none; display: grid; gap: 6px; }
-  .yt { background: #c4302b !important; }
-  .go { flex: none; padding: 6px 12px; border-radius: 12px; background: #00c951; color: #fff; font-weight: 700; text-decoration: none; font-size: 13px; }
-  .pin { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
-  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #161c2e; color: #e8eaf0; }
+  .yt { background: #fdecec !important; color: #c4302b !important; }
+  .go { flex: none; padding: 6px 12px; border-radius: 12px; background: #06c755; color: #fff; font-weight: 700; text-decoration: none; font-size: 13px; text-align: center; }
+  .pin { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; border: 2px solid #fff; box-shadow: 0 3px 10px rgba(16,24,40,.3); }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #fff; color: #1f2933; }
 </style>
 </head>
 <body>
