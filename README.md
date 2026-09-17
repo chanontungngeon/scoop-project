@@ -99,16 +99,25 @@ Scoop is one Node server with no database and no build step. LINE sends every ch
 
 | Tool               | What it does                                                                                                               |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `search_events`  | Filters the events. If nothing matches, it says which filter blocked it and returns the closest events without that filter |
-| `event_details`  | Description, times, price, venue, phone, how to get there                                                                  |
-| `book_event`     | Books tickets and returns the ticket card                                                                                  |
-| `change_booking` | Changes the ticket count, or cancels                                                                                       |
+| `search_events`  | Filters the events by day, kind, sport (tennis, wakeboard, climbing …), budget and group size. If nothing matches, it says which filter blocked it and returns the closest events without that filter |
+| `event_details`  | Description, times, price, whether it needs booking, venue, phone, website, opening hours, address, social links, wheelchair access, cuisine, how to get there |
+| `book_event`     | Books tickets and returns the ticket card, or for a walk-in event adds it to the user's calendar (see below)                |
+| `change_booking` | Changes the ticket count, or cancels a booking / removes a calendar entry                                                  |
 | `get_directions` | Taxi / Grab fare and BTS/MRT route, after asking for the user's location                                                   |
 | `show_screen`    | Home menu, bookings, calendar, profile, language or vibe picker                                                            |
 
 The model only chooses and phrases; it never has the final say on facts. Events, prices, seats and booking codes come from the tools. Tool results that are shown to the user appear as LINE cards under the model's reply. It can only book an event the user has actually been shown. When a reply used no tools, a second short model call checks the draft for invented events, places, routes or claimed actions. A flagged draft is never sent: the model tries again with thinking turned on, and if the retry is also flagged, the user gets a "sorry" message instead.
 
 **Taps don't use the model.** The step-by-step search, refine buttons, bookings, edit/cancel and the bottom menu are plain code and respond instantly.
+
+**Book, or just add to the calendar.** Every event has `booking`:
+
+| `booking` | When | What the user gets |
+| --- | --- | --- |
+| `required` | The venue is a business (restaurant, bar, shop, gym, studio, club, cinema …), it's a food event, or it's a programme anywhere (tour, walk, class, lesson, workshop, session, tournament, ticketed show) | A **Book** button, seats left, a ticket with a code `SC-XXXXXX`, ticket edits and cancelling |
+| `walk_in` | Anything else at a public place: exhibitions and openings, fairs, markets, run clubs, open skate or football at a public pitch | "🚶 No booking needed · just turn up" and an **📅 Add to calendar** button. It saves a calendar entry (`kind: "plan"`, code `PL-XXXXXX`): no seats are taken and there's no ticket, but it gets the same reminder, shows in My bookings and the calendar with a Remove button, and has getting-there and Google Calendar buttons |
+
+The chat agent sees `booking` in every search result, tells the user when they can just turn up, and `book_event` adds walk-in events to the calendar instead of booking them. Tickets and calendar entries are stored the same way in `data/state.json`; entries saved before this change have no `kind` and stay tickets.
 
 ### Guardrails
 
@@ -237,8 +246,10 @@ flowchart TD
   RF --> RES
 
   C --> B["'Book it for all of us' or tap Book<br/>→ ticket code SC-XXXXXX"]
+  C --> PL["Walk-in event: tap Add to calendar<br/>→ no booking, entry PL-XXXXXX"]
   ASK --> B
   B --> REM["⏰ Reminder push on the day"]
+  PL --> REM
   B --> MB["My bookings / calendar<br/>edit tickets or cancel"]
   B --> L["Getting there: share location"]
   L --> T["Taxi / Grab card + BTS/MRT route card<br/>(train first when it's a real option)"]
@@ -278,10 +289,17 @@ sequenceDiagram
 
 ### The data files
 
-- `scoop-mock-data-bkk.json`: the 1,000 events being searched and booked (mock, 13 Sep – 4 Oct 2026). Events `e30` onwards are placed at real venues (`venue.venue_id`, `venue.google_maps_url`), and every venue has at least one event. Titles, times, prices and seats are invented.
-  - `e01`–`e500` were made first. `e501`–`e1000` are added by `node scripts/events/generate-more.ts`: each copies the style of an original event held at the same type of venue (title, description, clock times, price, guide, photo), with a new venue, day, price, seats and status. Titles that name a day keep to it ("Weekend Tournament" only on Saturday or Sunday), and titles that name a specific place aren't copied. The `eval_set` must give the same results after generating, so an event that would change one is moved to another day. It uses a fixed random seed, so re-running gives the same file.
-- `assets/events/eXX.jpg`: one photo for each of `e01`–`e500` from Wikimedia Commons (CC BY / CC BY-SA / CC0 / public domain), resized to 640 px. `e501` onwards reuse the photo of the event they were modelled on. Cards load them from the bot's own `/assets` URL, because Wikimedia refuses requests without a User-Agent. Each event's `image_credit` and `image_source` name the author and licence.
-- `scoop-venues-bkk.json`: the station list that `rail.ts` plans routes on, plus 553 real venues from OpenStreetMap (130 food, 108 sports, 105 art, 95 markets, 58 nightlife, 19 cinemas, 15 workshops, 12 comedy / theatre, 11 music). The first 332 were built by `scripts/venues/1-fetch-osm.mjs` (Overpass queries per category) and then `2-rank.mjs` (nearest station, walk time, scored by phone/website/Wikidata/bilingual name). `3-add-venues.mjs` adds more with the same filters and scoring, skipping venues already there and a hand-checked list of unsuitable places (adult bars, gem shops that aren't workshops, places too generic to host an event). OpenStreetMap has few more music, comedy, film or workshop venues near stations, so those didn't grow.
+- `scoop-mock-data-bkk.json`: the 1,000 events being searched and booked (mock, 13 Sep – 4 Oct 2026): 241 sports, 195 food, 172 art, 150 markets, 65 nightlife, 64 music, 49 workshops, 38 film, 26 comedy. Events `e30` onwards are placed at real venues (`venue.venue_id`, `venue.google_maps_url`), and every venue has at least one event. Titles, times, prices and seats are invented. Each event has:
+  - `booking`: `required` (840) or `walk_in` (160), see "Book, or just add to the calendar" above.
+  - `activity` on sports events: what you'll be doing (tennis, wakeboard, climbing, yoga, muay_thai …), from the title, else the venue. The chat agent can search by it.
+  - `venue.venue_type` (business or public place), and `venue.info` with what OpenStreetMap knows about the place: opening hours, address, email, Facebook, Instagram, wheelchair access, cuisine, Wikipedia, description.
+  - `e01`–`e500` were made first. `e501`–`e1000` are added by `node scripts/events/generate-more.ts`, which also fills in `booking`, `activity` and venue details for all 1,000. New sports events are written for what the venue is for (a cable wakeboard session at a wake park, a tennis clinic at a tennis club, a skatepark jam only at a public skatepark). Other new events copy the style of an original event held at the same type of venue (title, description, clock times, price, guide, photo), with a new venue, day, price, seats and status. Titles that name a day keep to it ("Weekend Tournament" only on Saturday or Sunday), and titles that name a specific place aren't copied. The `eval_set` must give the same results after generating, so an event that would change one is moved to another day. It uses a fixed random seed, so re-running gives the same file.
+- `assets/events/eXX.jpg`: one photo for each of `e01`–`e500` from Wikimedia Commons (CC BY / CC BY-SA / CC0 / public domain), resized to 640 px. `e501` onwards reuse the photo of the event they were modelled on. `assets/events/sport-*.jpg`: 41 photos for 23 sports (tennis, wakeboard, climbing, padel, golf, ice skating, surfing …), downloaded by `scripts/events/fetch-sport-photos.mjs` and checked by eye; `sport-photos.json` has their credits. Cards load photos from the bot's own `/assets` URL, because Wikimedia refuses requests without a User-Agent. Each event's `image_credit` and `image_source` name the author and licence.
+- `scoop-venues-bkk.json`: the station list that `rail.ts` plans routes on, plus 596 real venues from OpenStreetMap (151 sports, 130 food, 105 art, 95 markets, 58 nightlife, 19 cinemas, 15 workshops, 12 comedy / theatre, 11 music), built in steps:
+  1. `1-fetch-osm.mjs` (Overpass queries per category) and `2-rank.mjs` (nearest station, walk time, scored by phone/website/Wikidata/bilingual name) made the first 332.
+  2. `3-add-venues.mjs` adds more with the same filters and scoring, skipping venues already there and a hand-checked list of unsuitable places (adult bars, gem shops that aren't workshops, places too generic to host an event). OpenStreetMap has few more music, comedy, film or workshop venues near stations, so those didn't grow.
+  3. `4-add-sports.mjs` adds sports activity venues: tennis, wakeboard parks, climbing gyms, badminton, swimming pools, golf and driving ranges, skateparks, bowling, a trampoline park, archery and football pitches. Wake parks and golf courses are far from stations, so their transit line gives the taxi time from the nearest station. A few well-known places whose OpenStreetMap tags don't match the queries were found by name with Nominatim and are added by their OpenStreetMap id. OpenStreetMap has no named ice rinks, padel or kayak places near stations beyond the ones already listed.
+  4. `5-add-details.mjs` downloads the full OpenStreetMap record of every venue and adds `details` (opening hours for 182 venues, addresses for 277, websites for 145, plus email, Facebook, Instagram, LINE, wheelchair access, cuisine, sports, fee, description, Wikipedia where known), `activity` for sports venues, and `venue_type`: business or public place.
 - `data/state.json`: users (language, vibe, recent chat, events on screen, last filter) and bookings. On startup the server takes booked seats back off the events and re-arms reminders that haven't fired.
 
 ### Choosing the model
@@ -344,17 +362,18 @@ The tunnel URL changes whenever the tunnel container restarts. Put the new one i
 - `src/flex.ts` — result cards, ticket, ride card, onboarding messages
 - `src/screens.ts` — home menu, step-by-step search, my bookings, calendar, profile
 - `src/i18n.ts` — all user-facing text in four languages
-- `src/store.ts` — users and bookings, saved to `data/state.json`
+- `src/store.ts` — users, bookings and calendar entries for walk-in events, saved to `data/state.json`
 - `src/ride.ts` — taxi distance, fare and leave-time estimates
 - `src/rail.ts` — BTS / MRT / ARL / Gold Line route planner: walk, lines, changes, stops, time and fare estimate
 - `src/map.ts` — the map page opened from the chat
 - `src/go.ts` — page that hands off to the Grab / LINE MAN app (opens in the phone's browser)
 - `scripts/richmenu.*` — bottom menu image and the script that registers it
-- `scripts/venues/` — fetch and rank real venues from OpenStreetMap into `scoop-venues-bkk.json` (`3-add-venues.mjs` adds more to the existing list: `node scripts/venues/1-fetch-osm.mjs <dir>` then `node scripts/venues/3-add-venues.mjs <dir> [--dry]`)
-- `scripts/events/generate-more.ts` — grows the mock events from 500 to 1,000 at the real venues, keeping the `eval_set` answers unchanged
+- `scripts/venues/` — fetch and rank real venues from OpenStreetMap into `scoop-venues-bkk.json`. To grow the existing list, in order (`<dir>` caches the downloads): `node scripts/venues/1-fetch-osm.mjs <dir>`, `3-add-venues.mjs <dir>`, `4-add-sports.mjs <dir>`, `5-add-details.mjs <dir>` (`--dry` on 3 and 4 lists what would be added)
+- `scripts/events/fetch-sport-photos.mjs` — downloads the sports photos and their credits
+- `scripts/events/generate-more.ts` — grows the mock events from 500 to 1,000 at the real venues and sets `booking`, `activity` and venue details on all of them, keeping the `eval_set` answers unchanged
 - `assets/greeting.jpg` — optional image sent with the greeting (served at /assets)
-- `scoop-venues-bkk.json` — 553 real venues near BTS/MRT stations, with phone, nearest station and a Google Maps search link (© OpenStreetMap, ODbL)
-- `assets/events/` — one photo for each of the first 500 events, reused by the rest (Wikimedia Commons, credits in each event's `image_credit`)
+- `scoop-venues-bkk.json` — 596 real venues near BTS/MRT stations (and a few wake parks further out), with phone, nearest station, opening hours and other details where known, a Google Maps search link, business or public place, and for sports what the place is for (© OpenStreetMap, ODbL)
+- `assets/events/` — one photo for each of the first 500 events, reused by the rest, plus `sport-*.jpg` for the sports activities (Wikimedia Commons, credits in each event's `image_credit` and in `sport-photos.json`)
 - `test/filter.test.ts` — runs the `eval_set` from the JSON
 - `test/agent.test.ts` — the agent loop against a fake Ollama: tool calls, cards, errors, round limit, dropped drafts, calendar, guardrails
 - `Makefile`, `scripts/local.sh` — `make setup / start / stop / status …` for running on a Mac (see Quick start); runtime files go in `.run/` and `logs/`

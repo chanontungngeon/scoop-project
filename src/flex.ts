@@ -86,6 +86,10 @@ export function youtubeUrl(e: Event, lang: Lang): string {
 
 export const transit = (e: Event, lang: Lang) => (lang === "th" ? e.transit_th : e.transit_en);
 
+// Walk-in events need no booking: the user adds them to their calendar and just turns up.
+export const isWalkIn = (e: Event) => e.booking === "walk_in";
+export const walkInLine = (e: Event, lang: Lang) => (e.price_thb_min > 0 ? T[lang].walkInPaid : T[lang].walkIn);
+
 export function textMessage(text: string, quickReply?: unknown) {
   return quickReply ? { type: "text", text, quickReply } : { type: "text", text };
 }
@@ -179,6 +183,7 @@ const matchTextColor = (score: number) => (score >= 80 ? GREEN_TEXT : score >= 6
 export function eventBubble(e: Event, lang: Lang, tickets = 1, match?: Match) {
   const t = T[lang];
   const s = styleOf(e);
+  const walkIn = isWalkIn(e);
   return {
     type: "bubble",
     size: "kilo",
@@ -232,7 +237,7 @@ export function eventBubble(e: Event, lang: Lang, tickets = 1, match?: Match) {
         ...(e.guide ? [{ type: "text", text: guideLine(e, lang)!, size: "xs", color: WARM, wrap: true }] : []),
         { type: "text", text: `📍 ${venue(e, lang)}`, size: "xs", color: MUTED, wrap: true },
         { type: "text", text: `🚆 ${transit(e, lang)}`, size: "xs", color: MUTED, wrap: true },
-        { type: "text", text: t.spotsLeft(e.seats_remaining), size: "xxs", color: GREEN_TEXT, weight: "bold", margin: "md" },
+        { type: "text", text: walkIn ? walkInLine(e, lang) : t.spotsLeft(e.seats_remaining), size: "xxs", color: GREEN_TEXT, weight: "bold", margin: "md", wrap: true },
       ],
     },
     footer: {
@@ -245,7 +250,10 @@ export function eventBubble(e: Event, lang: Lang, tickets = 1, match?: Match) {
           style: "primary",
           color: GREEN,
           height: "sm",
-          action: { type: "postback", label: t.book, data: `action=book&id=${e.id}&n=${tickets}&lang=${lang}`, displayText: `${t.book} ${s.emoji} ${title(e, lang)}${tickets > 1 ? ` (${M[lang].ticketsN(tickets)})` : ""}` },
+          // Walk-in events use the same action: the server adds them to the calendar instead of booking.
+          action: walkIn
+            ? { type: "postback", label: t.addPlan, data: `action=book&id=${e.id}&n=1&lang=${lang}`, displayText: `${t.addPlan} ${s.emoji} ${title(e, lang)}` }
+            : { type: "postback", label: t.book, data: `action=book&id=${e.id}&n=${tickets}&lang=${lang}`, displayText: `${t.book} ${s.emoji} ${title(e, lang)}${tickets > 1 ? ` (${M[lang].ticketsN(tickets)})` : ""}` },
         },
         {
           type: "box",
@@ -318,13 +326,14 @@ export function locationMessage(e: Event, lang: Lang) {
 const gcalStamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
 // Opens Google Calendar with the event filled in; the user taps Save. (Adding it silently would need Google sign-in.)
-export function googleCalendarUrl(e: Event, code: string, tickets: number, lang: Lang) {
+// plan: a walk-in event in the user's calendar, which has no ticket count to mention.
+export function googleCalendarUrl(e: Event, code: string, tickets: number, lang: Lang, plan = false) {
   const q = new URLSearchParams({
     action: "TEMPLATE",
     text: title(e, lang),
     dates: `${gcalStamp(e.start_datetime)}/${gcalStamp(e.end_datetime)}`,
     location: `${venue(e, lang)}, ${e.venue.area}, Bangkok`,
-    details: `Scoop · ${code} · ${M[lang].ticketsN(tickets)}${e.venue.phone ? ` · 📞 ${e.venue.phone}` : ""}`,
+    details: `Scoop · ${plan ? walkInLine(e, lang) : `${code} · ${M[lang].ticketsN(tickets)}`}${e.venue.phone ? ` · 📞 ${e.venue.phone}` : ""}`,
   });
   return `https://calendar.google.com/calendar/render?${q}`;
 }
@@ -332,14 +341,20 @@ export function googleCalendarUrl(e: Event, code: string, tickets: number, lang:
 // "+66 2 214 6630" -> "tel:+6622146630", "+66(0)-2225-2777" -> "tel:+6622252777", "02 392 1403" -> "tel:023921403".
 export const telUri = (phone: string) => `tel:${phone.replace(/\s*(p|ext\.?|x)\s*\d+$/i, "").replace(/\(0\)/g, "").replace(/[^\d+]/g, "")}`;
 
-function venueButtons(e: Event, code: string, tickets: number, lang: Lang) {
+// The venue's own page: its website, or its Facebook page when that's all there is.
+const venuePage = (e: Event) => [e.venue.website, e.venue.info?.facebook].find((u) => u && /^https:\/\//.test(u));
+
+function venueButtons(e: Event, code: string, tickets: number, lang: Lang, plan = false) {
+  const page = venuePage(e);
   return [
-    { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].addToCalendar, uri: googleCalendarUrl(e, code, tickets, lang) } },
+    { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].addToCalendar, uri: googleCalendarUrl(e, code, tickets, lang, plan) } },
     ...(e.venue.phone ? [{ type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].callVenue, uri: telUri(e.venue.phone) } }] : []),
+    ...(page ? [{ type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "uri", label: T[lang].website, uri: page } }] : []),
   ];
 }
 
-export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
+// The booking confirmation, or for a walk-in event (plan) the "added to your calendar" card.
+export function ticket(e: Event, code: string, lang: Lang, tickets = 1, plan = false) {
   const t = T[lang];
   const s = styleOf(e);
   const row = (k: string, v: string) => ({
@@ -352,7 +367,7 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
   });
   return {
     type: "flex",
-    altText: t.bookedAlt(title(e, lang)),
+    altText: plan ? t.planAlt(title(e, lang)) : t.bookedAlt(title(e, lang)),
     contents: {
       type: "bubble",
       size: "kilo",
@@ -362,19 +377,21 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
         layout: "vertical",
         spacing: "md",
         contents: [
-          { type: "text", text: "🎉", size: "3xl", align: "center" },
-          { type: "text", text: t.booked, weight: "bold", size: "lg", align: "center", color: TEXT },
+          { type: "text", text: plan ? "📅" : "🎉", size: "3xl", align: "center" },
+          { type: "text", text: plan ? t.planAdded : t.booked, weight: "bold", size: "lg", align: "center", color: TEXT },
           { type: "separator", color: LINE_SEP },
           { type: "text", text: `${s.emoji} ${title(e, lang)}`, weight: "bold", color: GREEN_TEXT, wrap: true },
           row(t.when, when(e, lang)),
           row(t.where, venue(e, lang)),
-          row(t.price, `${price(e, lang)} · ${M[lang].ticketsN(tickets)}`),
-          row(t.code, code),
+          ...(e.venue.info?.address ? [row(t.addressL, e.venue.info.address)] : []),
+          ...(e.venue.info?.opening_hours ? [row(t.hoursL, e.venue.info.opening_hours)] : []),
+          plan ? row(t.price, price(e, lang)) : row(t.price, `${price(e, lang)} · ${M[lang].ticketsN(tickets)}`),
+          ...(plan ? [] : [row(t.code, code)]),
           ...(e.guide ? [row(t.guideMeet, meetingPoint(e, lang)!), row("🧭", guideLine(e, lang)!.replace(/^🧭 /, ""))] : []),
           ...(e.venue.phone ? [row(t.phoneL, e.venue.phone)] : []),
           ...(e.venue.contact_person ? [row(t.contactL, e.venue.contact_person)] : []),
           { type: "separator", color: LINE_SEP },
-          { type: "text", text: t.demoNote, size: "xxs", color: MUTED, align: "center", wrap: true },
+          { type: "text", text: plan ? t.planNote : t.demoNote, size: "xxs", color: MUTED, align: "center", wrap: true },
         ],
       },
       footer: {
@@ -384,7 +401,7 @@ export function ticket(e: Event, code: string, lang: Lang, tickets = 1) {
         spacing: "sm",
         contents: [
           { type: "button", style: "primary", color: GREEN, height: "sm", action: { type: "postback", label: M[lang].bookMore, data: `action=find&lang=${lang}`, displayText: M[lang].bookMore } },
-          ...venueButtons(e, code, tickets, lang),
+          ...venueButtons(e, code, tickets, lang, plan),
           { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "postback", label: t.ride, data: `action=ride&id=${e.id}&lang=${lang}`, displayText: t.ride } },
           { type: "button", style: "secondary", color: SUBTLE, height: "sm", action: { type: "postback", label: M[lang].myBookings, data: `action=bookings&lang=${lang}`, displayText: M[lang].myBookings } },
         ],
@@ -582,7 +599,7 @@ export function reminderSetText(e: Event, lang: Lang, at: Date) {
 }
 
 // The day-of reminder: what, when, where, how to get there, plus calendar / call / ride buttons.
-export function reminderCard(e: Event, code: string, tickets: number, lang: Lang) {
+export function reminderCard(e: Event, code: string, tickets: number, lang: Lang, plan = false) {
   const t = T[lang];
   const line = (text: string, color = MUTED) => ({ type: "text", text, size: "xs", color, wrap: true });
   return {
@@ -604,7 +621,8 @@ export function reminderCard(e: Event, code: string, tickets: number, lang: Lang
           line(`🚆 ${transit(e, lang)}`),
           ...(e.guide ? [line(guideLine(e, lang)!, WARM), line(`🤝 ${t.guideMeet}: ${meetingPoint(e, lang)}`, TEXT)] : []),
           ...(e.venue.phone ? [line(`📞 ${e.venue.phone}${e.venue.contact_person ? ` · ${e.venue.contact_person}` : ""}`)] : []),
-          line(`🎟️ ${M[lang].ticketsN(tickets)} · ${t.bookingCode} ${code}`),
+          ...(e.venue.info?.opening_hours ? [line(`🕘 ${t.hoursL}: ${e.venue.info.opening_hours}`)] : []),
+          line(plan ? walkInLine(e, lang) : `🎟️ ${M[lang].ticketsN(tickets)} · ${t.bookingCode} ${code}`),
         ],
       },
       footer: {
@@ -613,7 +631,7 @@ export function reminderCard(e: Event, code: string, tickets: number, lang: Lang
         spacing: "sm",
         contents: [
           { type: "button", style: "primary", color: GREEN, height: "sm", action: { type: "postback", label: t.ride, data: `action=ride&id=${e.id}&lang=${lang}`, displayText: t.ride } },
-          ...venueButtons(e, code, tickets, lang),
+          ...venueButtons(e, code, tickets, lang, plan),
           menuButton(lang),
         ],
       },

@@ -21,7 +21,26 @@ export type Event = {
     contact_person?: string | null; // filled in by venue partners; public data has no staff names
     website?: string | null;
     youtube_url?: string | null; // a hand-picked review video; otherwise Scoop links to a YouTube search
+    venue_type?: "business" | "public"; // a shop, restaurant, gym ... or a park, market, museum ...
+    activity?: string; // sports venues: what you go there for, e.g. "tennis", "climbing"
+    // What OpenStreetMap knows about the place, when it knows it.
+    info?: {
+      opening_hours?: string;
+      address?: string;
+      email?: string;
+      facebook?: string;
+      instagram?: string;
+      wheelchair?: string;
+      cuisine?: string[];
+      wikipedia?: string;
+      description?: string;
+    };
   };
+  // Sports events: what you'll be doing, e.g. "tennis", "muay_thai". From the event's title, else its venue.
+  activity?: string;
+  // "required": book a spot (businesses, and programmes like tours and classes). "walk_in": no reservation, just
+  // turn up; Scoop adds it to the user's calendar instead of booking.
+  booking?: "required" | "walk_in";
   transit_en: string;
   transit_th: string;
   image_url: string;
@@ -46,6 +65,7 @@ export type Filter = {
   price_max_thb: number | null;
   categories: string[];
   party_size: number | null;
+  activities?: string[]; // sports activities, e.g. ["tennis", "wakeboard"]; unset or empty means any
 };
 
 export type Constraint = "date" | "category" | "price" | "party_size";
@@ -57,7 +77,10 @@ const inDateRange = (e: Event, f: Filter) =>
   (f.date_range.start === null || t(e.end_datetime) > t(f.date_range.start)) &&
   (f.date_range.end === null || t(e.start_datetime) < t(f.date_range.end));
 
-const inCategory = (e: Event, f: Filter) => f.categories.length === 0 || f.categories.includes(e.category);
+// The kind of event, and for sports what it is (tennis, climbing ...). Both count as the "category" constraint.
+const inCategory = (e: Event, f: Filter) =>
+  (f.categories.length === 0 || f.categories.includes(e.category)) &&
+  (!f.activities?.length || f.activities.includes(e.activity ?? ""));
 
 const inBudget = (e: Event, f: Filter) => f.price_max_thb === null || e.price_thb_min <= f.price_max_thb;
 

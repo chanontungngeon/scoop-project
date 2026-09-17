@@ -20,7 +20,7 @@ export function detectLang(text: string): Lang | null {
 
 // Shown before we know the user's language.
 export const GREETING =
-  "สวัสดี! เราคือ Scoop 🔍 เพื่อนหาอะไรสนุกๆ ทำในกรุงเทพฯ ช่วยหางาน จองในแชท และบอกทางไปให้ด้วย\n\n" +
+  "สวัสดี! เราคือ Scoop 🔍 เพื่อนหาอะไรสนุกๆ ทำในกรุงเทพฯ ช่วยหากิจกรรม จองในแชท และบอกทางไปให้ด้วย\n\n" +
   "Hi! I'm Scoop 🔍 your Bangkok buddy. I find fun things to do, book them in this chat and help you get there.\n\n" +
   "你好！我是 Scoop 🔍 你的曼谷玩乐伙伴：帮你找好玩的活动、在聊天里预订，还告诉你怎么去。\n\n" +
   "नमस्ते! मैं Scoop हूँ 🔍 बैंकॉक में आपका साथी: मज़ेदार चीज़ें ढूँढता हूँ, चैट में बुक करता हूँ और वहाँ पहुँचने में मदद करता हूँ।";
@@ -45,6 +45,16 @@ type Strings = {
   reasonDate: (w: string) => string;
   free: string;
   spotsLeft: (n: number) => string;
+  // Walk-in events: no booking, Scoop adds them to the user's calendar instead.
+  addPlan: string;
+  walkIn: string;
+  walkInPaid: string;
+  planAdded: string;
+  planAlt: (title: string) => string;
+  planNote: string;
+  hoursL: string;
+  addressL: string;
+  website: string;
   book: string;
   map: string;
   seeAllOnMap: (n: number) => string;
@@ -115,7 +125,7 @@ type Strings = {
 
 export const T: Record<Lang, Strings> = {
   th: {
-    welcome: "เยี่ยมเลย! 👋 เราคือ Scoop เพื่อนคนกรุงเทพฯ ที่ช่วยหาอะไรสนุกๆ ทำ\n\nช่วยอะไรได้บ้าง:\n🔎 หางานจริงตามวัน งบ และจำนวนคน\n🎟️ จองที่ได้ในแชทนี้เลย\n🚇 บอกทางไปงาน ทั้งรถไฟฟ้าและแท็กซี่\n🔔 เตือนก่อนงานเริ่ม\n\nคุยกับเราเหมือนคุยกับเพื่อนได้เลย เช่น “เสาร์นี้มีอะไรทำ ไปกัน 2 คน งบ 500”",
+    welcome: "เยี่ยมเลย! 👋 เราคือ Scoop เพื่อนคนกรุงเทพฯ ที่ช่วยหาอะไรสนุกๆ ทำ\n\nช่วยอะไรได้บ้าง:\n🔎 หากิจกรรมจริงตามวัน งบ และจำนวนคน\n🎟️ จองที่ได้ในแชทนี้เลย\n🚇 บอกทางไปงาน ทั้งรถไฟฟ้าและแท็กซี่\n🔔 เตือนก่อนงานเริ่ม\n\nคุยกับเราเหมือนคุยกับเพื่อนได้เลย เช่น “เสาร์นี้มีอะไรทำ ไปกัน 2 คน งบ 500”",
     nextTrip: "จองเรียบร้อยแล้ว 🎉\nอยากไปเที่ยวไหนต่อ หรือจะเรียกรถไปงาน? เลือกได้เลย 👇",
     pickVibe: "ก่อนอื่น เป็นสายไหน? เลือกเลย 👇",
     vibeChosen: (v) => `ชอบเลย! ${v} ในกรุงเทพฯ 🌆\nอยากหาอะไรทำ? พิมพ์มาได้เลย เช่น วัน งบ หรือไปกี่คน`,
@@ -136,6 +146,15 @@ export const T: Record<Lang, Strings> = {
     reasonDate: (w) => `ช่วง ${w} ไม่มีกิจกรรมที่ตรงกับที่ขอ`,
     free: "ฟรี",
     spotsLeft: (n) => `เหลือ ${n} ที่`,
+    addPlan: "📅 เพิ่มลงปฏิทิน",
+    walkIn: "🚶 ไม่ต้องจอง · ไปได้เลย",
+    walkInPaid: "🚶 ไม่ต้องจอง · จ่ายหน้างาน",
+    planAdded: "เพิ่มลงปฏิทินแล้ว!",
+    planAlt: (t) => `📅 เพิ่ม ${t} ลงปฏิทินแล้ว`,
+    planNote: "ไม่ต้องจอง ไปได้เลย Scoop จะเตือนในวันงานนะ",
+    hoursL: "เวลาเปิด",
+    addressL: "ที่อยู่",
+    website: "🌐 เว็บไซต์",
     book: "จองเลย",
     map: "ดูแผนที่",
     seeAllOnMap: (n) => `ดูทั้ง ${n} งานบนแผนที่`,
@@ -148,7 +167,7 @@ export const T: Record<Lang, Strings> = {
     code: "รหัส",
     ticketUnit: "ที่",
     demoNote: "การจองตัวอย่างสำหรับเดโม — ยังไม่มีการชำระเงิน",
-    full: "ขอโทษนะ งานนี้เต็มหรือปิดรับจองแล้ว 😢 ลองหางานอื่นดู",
+    full: "ขอโทษนะ งานนี้เต็มหรือปิดรับจองแล้ว 😢 ลองหากิจกรรมอื่นดู",
     reminderSet: (t, at) => `🔔 ตั้งเตือนแล้ว! Scoop จะทักไปวันงาน · ${at}\nเพิ่มลง Google Calendar ได้จากปุ่มบนตั๋วเลย\nเจอกันที่ ${t} นะ 🥳`,
     addToCalendar: "📅 เพิ่มลง Google Calendar",
     openingApp: (a) => `กำลังเปิด ${a}…`,
@@ -201,7 +220,7 @@ export const T: Record<Lang, Strings> = {
     remindLeave: "⏰ เตือนตอนต้องออก",
     leaveReminderSet: (t,s)=>`⏰ ตั้งเตือนแล้ว! Scoop จะทักไป${s ? `อีก ${s} วินาที (โหมดเดโม)` : `ตอน ${t}`} พร้อมปุ่มเรียกรถ`,
     timeToLeave: (title)=>`🚕 ถึงเวลาออกเดินทางไป ${title} แล้ว! เรียกรถได้เลย`,
-    bookFirst: "จองงานก่อนแล้วค่อยเรียกรถนะ 😊 ลองหางานดูได้เลย",
+    bookFirst: "จองงานก่อนแล้วค่อยเรียกรถนะ 😊 ลองหากิจกรรมดูได้เลย",
   },
   en: {
     welcome: "Great! 👋 I'm Scoop, your Bangkok friend for finding fun things to do.\n\nHere's how I can help:\n🔎 Find real events by day, budget and group size\n🎟️ Book your spot right here in the chat\n🚇 Show you how to get there by BTS, MRT or taxi\n🔔 Remind you before it starts\n\nJust talk to me like a friend, e.g. “2 of us this Saturday, under ฿500”",
@@ -225,6 +244,15 @@ export const T: Record<Lang, Strings> = {
     reasonDate: (w) => `nothing matching is on in ${w}`,
     free: "Free",
     spotsLeft: (n) => `${n} spots left`,
+    addPlan: "📅 Add to calendar",
+    walkIn: "🚶 No booking needed · just turn up",
+    walkInPaid: "🚶 No booking needed · pay at the door",
+    planAdded: "Added to your calendar!",
+    planAlt: (t) => `📅 ${t} is in your calendar`,
+    planNote: "No booking needed — just turn up. Scoop will remind you on the day.",
+    hoursL: "Hours",
+    addressL: "Address",
+    website: "🌐 Website",
     book: "Book",
     map: "Map",
     seeAllOnMap: (n) => `See all ${n} on a map`,
@@ -314,6 +342,15 @@ export const T: Record<Lang, Strings> = {
     reasonDate: (w) => `${w} 没有符合条件的活动`,
     free: "免费",
     spotsLeft: (n) => `剩余 ${n} 个名额`,
+    addPlan: "📅 加入日历",
+    walkIn: "🚶 无需预订 · 直接去",
+    walkInPaid: "🚶 无需预订 · 现场付款",
+    planAdded: "已加入你的日历！",
+    planAlt: (t) => `📅 ${t} 已加入日历`,
+    planNote: "无需预订，直接去就行。Scoop 会在当天提醒你。",
+    hoursL: "营业时间",
+    addressL: "地址",
+    website: "🌐 网站",
     book: "预订",
     map: "地图",
     seeAllOnMap: (n) => `在地图上查看全部 ${n} 个`,
@@ -403,6 +440,15 @@ export const T: Record<Lang, Strings> = {
     reasonDate: (w) => `${w} में ऐसा कोई इवेंट नहीं है`,
     free: "मुफ्त",
     spotsLeft: (n) => `${n} सीटें बाकी`,
+    addPlan: "📅 कैलेंडर में जोड़ें",
+    walkIn: "🚶 बुकिंग की ज़रूरत नहीं · बस पहुँच जाएँ",
+    walkInPaid: "🚶 बुकिंग की ज़रूरत नहीं · वहीं भुगतान करें",
+    planAdded: "आपके कैलेंडर में जुड़ गया!",
+    planAlt: (t) => `📅 ${t} आपके कैलेंडर में है`,
+    planNote: "बुकिंग की ज़रूरत नहीं — बस पहुँच जाएँ। Scoop उस दिन आपको याद दिलाएगा।",
+    hoursL: "समय",
+    addressL: "पता",
+    website: "🌐 वेबसाइट",
     book: "बुक करें",
     map: "नक्शा",
     seeAllOnMap: (n) => `सभी ${n} नक्शे पर देखें`,
@@ -545,6 +591,12 @@ type MenuStrings = {
   yesCancel: string;
   keep: string;
   cancelled: (title: string) => string;
+  planLine: string;
+  removePlan: string;
+  removeQ: string;
+  yesRemove: string;
+  removeShort: string;
+  removed: (title: string) => string;
   calendarTitle: string;
   calendarHint: string;
   profileTitle: string;
@@ -613,7 +665,7 @@ export const M: Record<Lang, MenuStrings> = {
     people: (n) => `${n} คน`,
     anyPeople: "ไม่ระบุ",
     anything: "อะไรก็ได้",
-    noBookings: "ยังไม่มีการจองเลย ลองหางานที่ชอบดูนะ 😊",
+    noBookings: "ยังไม่มีการจองเลย ลองหากิจกรรมที่ชอบดูนะ 😊",
     ticketsN: (n) => `${n} ที่`,
     edit: "✏️ แก้ไข",
     cancel: "❌ ยกเลิก",
@@ -635,6 +687,12 @@ export const M: Record<Lang, MenuStrings> = {
     yesCancel: "ยืนยันยกเลิก",
     keep: "ไม่ยกเลิก",
     cancelled: (t) => `ยกเลิกการจอง ${t} แล้ว คืนที่นั่งเรียบร้อย`,
+    planLine: "📅 ไม่ต้องจอง · อยู่ในปฏิทินแล้ว",
+    removePlan: "🗑️ ลบออกจากปฏิทิน",
+    removeQ: "ลบออกจากปฏิทินไหม?",
+    yesRemove: "ลบเลย",
+    removeShort: "ลบ",
+    removed: (t) => `ลบ ${t} ออกจากปฏิทินแล้ว`,
     calendarTitle: "🗓️ ปฏิทินของฉัน",
     calendarHint: "แตะที่งานเพื่อเพิ่มลง Google Calendar",
     profileTitle: "👤 โปรไฟล์",
@@ -723,6 +781,12 @@ export const M: Record<Lang, MenuStrings> = {
     yesCancel: "Yes, cancel",
     keep: "Keep it",
     cancelled: (t) => `Your booking for ${t} is cancelled and the spots are released.`,
+    planLine: "📅 No booking needed · in your calendar",
+    removePlan: "🗑️ Remove from calendar",
+    removeQ: "Remove from your calendar?",
+    yesRemove: "Yes, remove",
+    removeShort: "Remove",
+    removed: (t) => `${t} is removed from your calendar.`,
     calendarTitle: "🗓️ My calendar",
     calendarHint: "Tap an event to add it to Google Calendar",
     profileTitle: "👤 Profile",
@@ -811,6 +875,12 @@ export const M: Record<Lang, MenuStrings> = {
     yesCancel: "确认取消",
     keep: "保留",
     cancelled: (t) => `已取消 ${t} 的预订，名额已释放。`,
+    planLine: "📅 无需预订 · 已在日历中",
+    removePlan: "🗑️ 从日历移除",
+    removeQ: "从日历中移除？",
+    yesRemove: "是的，移除",
+    removeShort: "移除",
+    removed: (t) => `已将 ${t} 从日历中移除。`,
     calendarTitle: "🗓️ 我的日历",
     calendarHint: "点击活动可添加到 Google 日历",
     profileTitle: "👤 个人资料",
@@ -899,6 +969,12 @@ export const M: Record<Lang, MenuStrings> = {
     yesCancel: "हाँ, रद्द करें",
     keep: "रहने दें",
     cancelled: (t) => `${t} की बुकिंग रद्द हो गई और सीटें वापस कर दी गईं।`,
+    planLine: "📅 बुकिंग नहीं चाहिए · कैलेंडर में",
+    removePlan: "🗑️ कैलेंडर से हटाएँ",
+    removeQ: "कैलेंडर से हटाएँ?",
+    yesRemove: "हाँ, हटाएँ",
+    removeShort: "हटाएँ",
+    removed: (t) => `${t} आपके कैलेंडर से हटा दिया गया।`,
     calendarTitle: "🗓️ मेरा कैलेंडर",
     calendarHint: "Google Calendar में जोड़ने के लिए इवेंट पर टैप करें",
     profileTitle: "👤 प्रोफ़ाइल",

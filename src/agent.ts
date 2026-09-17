@@ -1,4 +1,4 @@
-import { CATEGORIES, DAY_MS, TZ, now } from "./data.ts";
+import { ACTIVITIES, CATEGORIES, DAY_MS, TZ, now } from "./data.ts";
 
 // The chat side of Scoop. The model holds the conversation and calls tools; the tools are Scoop's own code
 // (search, booking, directions), so events, prices, seats and booking codes always come from the data, never the model.
@@ -36,6 +36,7 @@ export const TOOLS = [
       date_to: { type: "string", description: "Last day, YYYY-MM-DD. Same as date_from for a single day." },
       after_time: { type: "string", description: "HH:MM. Only when the user says tonight, this evening or a time, e.g. 18:00 for tonight." },
       categories: { type: "array", items: { type: "string", enum: CATEGORIES }, description: "Only kinds of event the user asked for; don't guess. 'creative' means art and workshop." },
+      activities: { type: "array", items: { type: "string", enum: ACTIVITIES }, description: "A specific sport the user named, e.g. tennis, wakeboard, climbing, yoga, muay_thai. Leave out for sports in general." },
       price_max_thb: { type: "integer", description: "Most they want to pay per ticket, in baht. 0 means free only." },
       party_size: { type: "integer", description: "Total people going, including the user. 'me and 3 friends' is 4." },
     },
@@ -43,11 +44,11 @@ export const TOOLS = [
   fn("event_details", "Full details of one event: description, times, price range, venue, phone, how to get there, seats left.", {
     event_id: { type: "string" },
   }, ["event_id"]),
-  fn("book_event", "Book tickets. Only call this once the user has clearly said which event and how many tickets.", {
+  fn("book_event", "Book tickets. For an event that needs no booking (walk in), this adds it to the user's calendar instead, with a reminder; tickets don't matter then. Only call this once the user has clearly said which event (and, if it needs booking, how many tickets).", {
     event_id: { type: "string" },
     tickets: { type: "integer", description: `1 to ${MAX_TICKETS}` },
   }, ["event_id", "tickets"]),
-  fn("change_booking", "Change how many tickets a booking has. tickets = 0 cancels the whole booking. Confirm with the user before cancelling.", {
+  fn("change_booking", "Change how many tickets a booking has. tickets = 0 cancels the whole booking, or removes a walk-in event from their calendar. Confirm with the user before cancelling.", {
     code: { type: "string", description: "Booking code, e.g. SC-1A2B3C" },
     tickets: { type: "integer", description: "New total number of tickets, or 0 to cancel" },
   }, ["code", "tickets"]),
@@ -117,6 +118,8 @@ What's true:
 - If a search finds nothing, the tool says which filter blocked it and gives the closest events without that filter, shown as cards. Say so simply and suggest one of those.
 - Never show the user event ids, tool names or error messages. Say what happened in plain words.
 - Book only after the user has made clear which event and how many tickets. Before cancelling, check with them first.
+- Each event says whether it needs booking. Shops, restaurants, gyms, studios and programmes like classes and tours need booking. Events at public places (exhibitions, markets, fairs, run clubs) need no booking: say they can just turn up, and offer to add it to their calendar, which book_event does. Don't talk about tickets or seats for those.
+- For questions about a place (opening hours, address, website, wheelchair access, what food it serves), use event_details and answer only from what it gives; if it doesn't say, say you don't know.
 - "The second one", "that jazz thing" and so on refer to the events on screen below.
 
 Safety and limits:

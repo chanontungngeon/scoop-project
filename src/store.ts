@@ -40,6 +40,9 @@ export type User = {
 };
 
 export type Booking = {
+  // "plan": a walk-in event the user added to their calendar. No ticket and no seats taken; it still gets reminders
+  // and shows in My bookings and the calendar. Bookings made before this existed have no kind and are tickets.
+  kind?: "plan";
   code: string;
   userId: string;
   eventId: string;

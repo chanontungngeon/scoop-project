@@ -34,3 +34,12 @@ test("never returns inactive or sold-out events, even with no constraints", () =
   assert.ok(all.length > 0);
   assert.ok(all.every((e) => e.status === "active" && e.seats_remaining > 0));
 });
+
+test("an activity filter only returns that sport, and walk-in events are tagged", () => {
+  const f: Filter = { date_range: { start: null, end: null }, price_max_thb: null, categories: ["sports"], party_size: null, activities: ["tennis"] };
+  const got = filterEvents(data.events, f, 1000);
+  assert.ok(got.length > 0);
+  assert.ok(got.every((e) => e.activity === "tennis"));
+  assert.ok(data.events.every((e) => e.booking === "required" || e.booking === "walk_in"));
+  assert.ok(data.events.filter((e) => e.category === "food").every((e) => e.booking === "required"));
+});

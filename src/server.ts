@@ -5,11 +5,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
-import { EVENTS, TZ, now } from "./data.ts";
+import { ACTIVITIES, EVENTS, TZ, now } from "./data.ts";
 import { filterEvents, blockingConstraint } from "./filter.ts";
 import type { Event, Filter, Constraint } from "./filter.ts";
 import {
-  VIBES, askLocation, eventCarousel, matchReasonText, navQuickReply, eventListText, examplesQuickReply, greeting, hhmm, languagePicker, setImageBase, locationMessage, price,
+  VIBES, askLocation, eventCarousel, matchReasonText, navQuickReply, eventListText, examplesQuickReply, greeting, hhmm, isWalkIn, languagePicker, setImageBase, locationMessage, price,
   reminderCard, reminderSetText, rideCard, transitCard, textMessage, ticket, title, timeToLeave, venue, vibeChosen, vibeLabel, vibePicker, welcome, when,
 } from "./flex.ts";
 import type { VibeId } from "./flex.ts";
@@ -75,7 +75,8 @@ function emptyText(c: Constraint, f: Filter, lang: Lang): string {
 // "📅 Sat 19 Sep · 🎨 Art · 💰 ≤ ฿500 · 👥 2 people" — what this search used.
 function summaryLine(f: Filter, lang: Lang): string {
   const parts = [`📅 ${windowLabel(f, lang).replace(" 00:00–23:59", "")}`];
-  if (f.categories.length) parts.push(f.categories.map((c) => `${catEmoji(c)} ${M[lang].cat[c] ?? c}`).join(", "));
+  if (f.activities?.length) parts.push(`🏅 ${f.activities.map((a) => a.replace(/_/g, " ")).join(", ")}`);
+  else if (f.categories.length) parts.push(f.categories.map((c) => `${catEmoji(c)} ${M[lang].cat[c] ?? c}`).join(", "));
   if (f.price_max_thb !== null) parts.push(`💰 ${budgetLabel(f.price_max_thb, lang)}`);
   if (f.party_size !== null) parts.push(`👥 ${peopleLabel(f.party_size, lang)}`);
   return parts.join(" · ");
@@ -177,7 +178,7 @@ function scheduleEventReminder(b: Booking) {
   runAt(at, () => {
     const current = activeBooking(b.code);
     if (!current) return; // cancelled in the meantime
-    void lineApi("/v2/bot/message/push", { to: b.userId, messages: [reminderCard(e, b.code, current.tickets, current.lang), locationMessage(e, current.lang)] });
+    void lineApi("/v2/bot/message/push", { to: b.userId, messages: [reminderCard(e, b.code, current.tickets, current.lang, isPlan(current)), locationMessage(e, current.lang)] });
   });
 }
 
@@ -196,22 +197,40 @@ function restoreState() {
   const active = state.bookings.filter((b) => b.status === "active");
   for (const b of active) {
     const e = eventById(b.eventId);
-    if (e) e.seats_remaining -= b.tickets;
+    if (e && !isPlan(b)) e.seats_remaining -= b.tickets;
     scheduleEventReminder(b);
     scheduleLeaveReminder(b);
   }
   console.log(`Restored ${Object.keys(state.users).length} users and ${active.length} active bookings.`);
 }
 
-const newCode = () => "SC-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+const newCode = (prefix = "SC") => `${prefix}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+const isPlan = (b: Booking) => b.kind === "plan";
 
 type BookOutcome =
-  | { status: "booked" | "already_booked"; code: string; tickets: number; messages: unknown[] }
+  | { status: "booked" | "already_booked" | "added_to_calendar" | "already_in_calendar"; code: string; tickets: number; messages: unknown[] }
   | { status: "unavailable" | "not_enough_seats"; seats_left: number; messages: unknown[] };
 
+// Books tickets, or for a walk-in event (no booking needed) adds it to the user's calendar: no seats are taken and
+// there's no ticket, but it gets the same reminder and shows in My bookings and the calendar.
 function book(userId: string, user: User, e: Event, lang: Lang, tickets: number): BookOutcome {
   const existing = state.bookings.find((b) => b.userId === userId && b.eventId === e.id && b.status === "active");
-  if (existing) return { status: "already_booked", code: existing.code, tickets: existing.tickets, messages: [ticket(e, existing.code, lang, existing.tickets)] };
+  if (existing) {
+    return { status: isPlan(existing) ? "already_in_calendar" : "already_booked", code: existing.code, tickets: existing.tickets, messages: [ticket(e, existing.code, lang, existing.tickets, isPlan(existing))] };
+  }
+
+  if (isWalkIn(e)) {
+    if (e.status !== "active" || Date.parse(e.start_datetime) <= now().getTime()) {
+      return { status: "unavailable", seats_left: 0, messages: [textMessage(T[lang].full, examplesQuickReply(lang))] };
+    }
+    const b: Booking = { kind: "plan", code: newCode("PL"), userId, eventId: e.id, tickets: 1, lang, status: "active", createdAt: new Date().toISOString() };
+    state.bookings.push(b);
+    Object.assign(user, { justBooked: true, lastBookedId: e.id });
+    scheduleEventReminder(b);
+    console.log(JSON.stringify({ planned: e.id, code: b.code }));
+    const remindAt = reminderTime(e, b);
+    return { status: "added_to_calendar", code: b.code, tickets: 1, messages: [ticket(e, b.code, lang, 1, true), ...(remindAt !== null ? [reminderSetText(e, lang, new Date(remindAt))] : [])] };
+  }
 
   if (e.status !== "active" || Date.parse(e.start_datetime) <= now().getTime() || e.seats_remaining <= 0) {
     return { status: "unavailable", seats_left: Math.max(0, e.seats_remaining), messages: [textMessage(T[lang].full, examplesQuickReply(lang))] };
@@ -233,6 +252,11 @@ function book(userId: string, user: User, e: Event, lang: Lang, tickets: number)
 
 // Set a booking's ticket count; 0 cancels it. Shared by the edit/cancel buttons and the chat agent.
 function changeTickets(b: Booking, e: Event, n: number): { ok: true } | { ok: false; seats_available: number } {
+  if (isPlan(b)) {
+    // A calendar entry has no seats: 0 removes it, anything else leaves it as it is.
+    if (n <= 0) b.status = "cancelled";
+    return { ok: true };
+  }
   if (n <= 0) {
     b.status = "cancelled";
     e.seats_remaining += b.tickets;
@@ -263,7 +287,8 @@ function directionCards(e: Event, origin: Point, lang: Lang, publicBase: string 
 // ---------- chat agent ----------
 
 const eventLine = (e: Event, lang: Lang) =>
-  `${e.id} · ${title(e, lang)} · ${when(e, lang)} · ${price(e, lang)} · ${venue(e, lang)} · ${e.seats_remaining} seats left`;
+  `${e.id} · ${title(e, lang)} · ${when(e, lang)} · ${price(e, lang)} · ${venue(e, lang)}${e.venue.info?.opening_hours ? ` (venue opening hours: ${e.venue.info.opening_hours})` : ""} · ${isWalkIn(e) ? "no booking needed (walk in)" : `${e.seats_remaining} seats left`}`;
+const bookingNote = (e: Event) => (isWalkIn(e) ? "no booking needed: walk in; book_event adds it to their calendar" : "booking required");
 
 const BLOCKED: Record<Constraint, string> = {
   party_size: "events on those dates don't have enough seats left for that many people",
@@ -297,7 +322,7 @@ function facts(userId: string, user: User, lang: Lang): Facts {
     vibe: user.vibe ? `${VIBES[user.vibe].name.en} (${VIBES[user.vibe].categories.join(", ")})` : undefined,
     usualBudget: user.usualBudget,
     usualPeople: user.usualPeople,
-    bookings: bookingViews(userId).filter((v) => !v.ended).map(({ b, e }) => `${b.code}: ${b.tickets} ticket(s) · ${eventLine(e, lang)}`),
+    bookings: bookingViews(userId).filter((v) => !v.ended).map(({ b, e }) => `${b.code}: ${isPlan(b) ? "in their calendar, no ticket" : `${b.tickets} ticket(s)`} · ${eventLine(e, lang)}`),
     lastShown: (user.lastShownIds ?? []).flatMap((id, i) => {
       const e = eventById(id);
       return e ? [`${i + 1}. ${eventLine(e, lang)}`] : [];
@@ -334,10 +359,15 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       const range = isDay(from) ? dayRange(from, isDay(to) ? to : from, str(args.after_time)) : isDay(to) ? dayRange(bkkDate(0), to) : { start: null, end: null };
       const cats = Array.isArray(args.categories) ? args.categories.filter((c): c is string => typeof c === "string" && EVENTS.some((e) => e.category === c)) : [];
       const people = int(args.party_size);
-      const filter: Filter = { date_range: windowFrom(range), price_max_thb: int(args.price_max_thb), categories: [...new Set(cats)], party_size: people && people > 0 ? people : null };
+      const activities = Array.isArray(args.activities) ? [...new Set(args.activities.filter((a): a is string => typeof a === "string" && ACTIVITIES.includes(a)))] : [];
+      const filter: Filter = {
+        date_range: windowFrom(range), price_max_thb: int(args.price_max_thb), categories: [...new Set(activities.length ? [...cats, "sports"] : cats)], party_size: people && people > 0 ? people : null,
+        ...(activities.length ? { activities } : {}),
+      };
 
       const toResult = (events: Event[], matches: Map<string, Match>) => events.map((e, i) => ({
-        n: i + 1, id: e.id, title: title(e, lang), category: e.category, when: when(e, lang), price: price(e, lang), venue: venue(e, lang), area: e.venue.area, seats_left: e.seats_remaining,
+        n: i + 1, id: e.id, title: title(e, lang), category: e.category, when: when(e, lang), price: price(e, lang), venue: venue(e, lang), area: e.venue.area,
+        booking: bookingNote(e), ...(isWalkIn(e) ? {} : { seats_left: e.seats_remaining }), ...(e.activity ? { activity: e.activity.replace(/_/g, " ") } : {}),
         match_percent: matches.get(e.id)?.score ?? "unknown (no profile yet)", match_reasons: matches.get(e.id)?.reasons.map((r) => matchReasonText(r, "en")),
       }));
       const searched = summaryLine(filter, "en");
@@ -353,7 +383,7 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       // something real to suggest. With nothing close either, the earlier cards stay "on screen".
       const blocking = found.blocking!;
       const relaxed: Filter =
-        blocking === "category" ? { ...filter, categories: [] }
+        blocking === "category" ? { ...filter, categories: [], activities: [] }
         : blocking === "price" ? { ...filter, price_max_thb: null }
         : blocking === "party_size" ? { ...filter, party_size: null }
         : { ...filter, date_range: windowFrom({ start: null, end: null }) };
@@ -377,8 +407,11 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       return {
         result: {
           id: e.id, title: title(e, lang), description: lang === "th" ? e.description_short_th : e.description_short_en, category: e.category,
-          when: when(e, lang), price: price(e, lang), seats_left: e.seats_remaining, venue: venue(e, lang), area: e.venue.area,
+          when: when(e, lang), price: price(e, lang), booking: bookingNote(e), ...(isWalkIn(e) ? {} : { seats_left: e.seats_remaining }), venue: venue(e, lang), area: e.venue.area,
           getting_there: lang === "th" ? e.transit_th : e.transit_en, phone: e.venue.phone ?? null, website: e.venue.website ?? null,
+          venue_kind: e.venue.venue_type === "public" ? "public place" : "business", activity: e.activity?.replace(/_/g, " "),
+          venue_opening_hours: e.venue.info?.opening_hours ?? "not known (don't guess, and don't give the event's time instead)", address: e.venue.info?.address, email: e.venue.info?.email, facebook: e.venue.info?.facebook,
+          instagram: e.venue.info?.instagram, wheelchair_access: e.venue.info?.wheelchair, cuisine: e.venue.info?.cuisine, about_the_place: e.venue.info?.description,
           guide: e.guide ? { includes: e.guide.includes_en, meeting_point: e.guide.meeting_point_en, duration_min: e.guide.duration_min, languages: e.guide.languages } : null,
         },
       };
@@ -393,7 +426,7 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       const out = book(userId, user, e, lang, n && n > 0 ? n : 1);
       const { messages, ...result } = out;
       // A failed booking is explained by the agent in its own words; only a ticket is worth a card.
-      return { result, messages: out.status === "booked" || out.status === "already_booked" ? messages : undefined };
+      return { result, messages: out.status === "unavailable" || out.status === "not_enough_seats" ? undefined : messages };
     },
 
     change_booking(args) {
@@ -402,10 +435,11 @@ function agentTools(userId: string, user: User, lang: Lang, publicBase: string |
       if (!b || !e || b.userId !== userId) return { result: { error: "No active booking with that code" } };
       if (hasEnded(e)) return { result: { error: "That event has already finished" } };
       const n = Math.max(0, int(args.tickets) ?? 0);
+      if (isPlan(b) && n > 0) return { result: { error: "That's a walk-in event in their calendar: there are no tickets to change. tickets = 0 removes it from the calendar." } };
       if (n > MAX_TICKETS) return { result: { error: `At most ${MAX_TICKETS} tickets per booking. Suggest calling the venue for bigger groups.` } };
       const r = changeTickets(b, e, n);
       if (!r.ok) return { result: { error: "Not enough seats", seats_available: r.seats_available } };
-      if (n === 0) return { result: { status: "cancelled", code: b.code }, messages: myBookings(bookingViews(userId), lang) };
+      if (n === 0) return { result: { status: isPlan(b) ? "removed_from_calendar" : "cancelled", code: b.code }, messages: myBookings(bookingViews(userId), lang) };
       return { result: { status: "updated", code: b.code, tickets: n }, messages: [ticket(e, b.code, lang, n)] };
     },
 
@@ -695,11 +729,11 @@ async function processEvent(ev: LineEvent, publicBase?: string) {
       case "bookings":
         return reply(myBookings(bookingViews(userId), lang));
       case "edit":
-        if (!booking || !bookingEvent || hasEnded(bookingEvent)) return reply(myBookings(bookingViews(userId), lang));
+        if (!booking || !bookingEvent || hasEnded(bookingEvent) || isPlan(booking)) return reply(myBookings(bookingViews(userId), lang));
         return reply([ticketsPicker(booking, bookingEvent, lang, bookingEvent.seats_remaining + booking.tickets)]);
       case "settickets": {
         const n = Number(p.get("n"));
-        if (!booking || !bookingEvent || !(n >= 1)) return reply(myBookings(bookingViews(userId), lang));
+        if (!booking || !bookingEvent || !(n >= 1) || isPlan(booking)) return reply(myBookings(bookingViews(userId), lang));
         const r = changeTickets(booking, bookingEvent, n);
         if (!r.ok) return reply([textMessage(M[lang].notEnoughSeats(r.seats_available))]);
         return reply([textMessage(M[lang].ticketsUpdated(n)), ticket(bookingEvent, booking.code, lang, n)]);
@@ -707,12 +741,12 @@ async function processEvent(ev: LineEvent, publicBase?: string) {
       case "cancel":
         return booking && bookingEvent ? reply([cancelConfirm(booking, bookingEvent, lang)]) : reply(myBookings(bookingViews(userId), lang));
       case "cancelsome":
-        if (!booking || !bookingEvent || booking.tickets < 2) return reply(myBookings(bookingViews(userId), lang));
+        if (!booking || !bookingEvent || booking.tickets < 2 || isPlan(booking)) return reply(myBookings(bookingViews(userId), lang));
         return reply([cancelSomePicker(booking, bookingEvent, lang)]);
       case "cancelseats": {
         const k = Number(p.get("n"));
         if (!booking || !bookingEvent || !(k >= 1)) return reply(myBookings(bookingViews(userId), lang));
-        if (k >= booking.tickets) return reply([cancelConfirm(booking, bookingEvent, lang)]);
+        if (k >= booking.tickets || isPlan(booking)) return reply([cancelConfirm(booking, bookingEvent, lang)]);
         changeTickets(booking, bookingEvent, booking.tickets - k);
         return reply([textMessage(M[lang].cancelledSome(k, booking.tickets, title(bookingEvent, lang))), ...myBookings(bookingViews(userId), lang)]);
       }
@@ -721,9 +755,8 @@ async function processEvent(ev: LineEvent, publicBase?: string) {
         changeTickets(booking, bookingEvent, 0);
         // Back to what's left, so it's easy to cancel another one.
         const remaining = bookingViews(userId);
-        return reply(remaining.length
-          ? [textMessage(M[lang].cancelled(title(bookingEvent, lang))), ...myBookings(remaining, lang)]
-          : [menuCard(lang, M[lang].cancelled(title(bookingEvent, lang)))]);
+        const done = isPlan(booking) ? M[lang].removed(title(bookingEvent, lang)) : M[lang].cancelled(title(bookingEvent, lang));
+        return reply(remaining.length ? [textMessage(done), ...myBookings(remaining, lang)] : [menuCard(lang, done)]);
       }
       case "calendar":
         return reply(calendarView(bookingViews(userId), lang));

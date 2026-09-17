@@ -1,0 +1,294 @@
+{
+  "tennis": [
+    {
+      "image_path": "assets/events/sport-tennis-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Evening_tennis_match%2C_Kirkstall_Abbey_-_geograph.org.uk_-_6858907.jpg/960px-Evening_tennis_match%2C_Kirkstall_Abbey_-_geograph.org.uk_-_6858907.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Stephen Craven · CC BY-SA 2.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Evening_tennis_match,_Kirkstall_Abbey_-_geograph.org.uk_-_6858907.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-tennis-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Tennis_Court_Brushing_Ritual.jpg/960px-Tennis_Court_Brushing_Ritual.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Timothy Akolamazima · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Tennis_Court_Brushing_Ritual.jpg"
+    }
+  ],
+  "wakeboard": [
+    {
+      "image_path": "assets/events/sport-wakeboard-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Cable_wakeboarding_at_Hove_Lagoon_-_geograph.org.uk_-_8027660.jpg/960px-Cable_wakeboarding_at_Hove_Lagoon_-_geograph.org.uk_-_8027660.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Mat Fascione · CC BY-SA 2.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Cable_wakeboarding_at_Hove_Lagoon_-_geograph.org.uk_-_8027660.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-wakeboard-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Wakeboarding_Watersports_Aarhus_%C3%98_docklands_Denmark_04.jpg/960px-Wakeboarding_Watersports_Aarhus_%C3%98_docklands_Denmark_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Ciara Ní Riain · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Wakeboarding_Watersports_Aarhus_%C3%98_docklands_Denmark_04.jpg"
+    }
+  ],
+  "climbing": [
+    {
+      "image_path": "assets/events/sport-climbing-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Luch_Bouldering_Gym_SpB.jpg/960px-Luch_Bouldering_Gym_SpB.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Bondarev.gal · CC BY 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Luch_Bouldering_Gym_SpB.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-climbing-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Severnaya_Stena_Bouldering_Gym_SpB.jpg/960px-Severnaya_Stena_Bouldering_Gym_SpB.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Bondarev.gal · CC BY 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Severnaya_Stena_Bouldering_Gym_SpB.jpg"
+    }
+  ],
+  "padel": [
+    {
+      "image_path": "assets/events/sport-padel-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Padel_Tennis_Arena_ISPO_2014.jpg/960px-Padel_Tennis_Arena_ISPO_2014.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Ordercrazy · CC0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Padel_Tennis_Arena_ISPO_2014.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-padel-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Exhibici%C3%B3n_de_padel_en_el_obelisco_-_Premier_Padel_2026_01.jpg/960px-Exhibici%C3%B3n_de_padel_en_el_obelisco_-_Premier_Padel_2026_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Fotos GCBA · CC BY 2.5 ar · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Exhibici%C3%B3n_de_padel_en_el_obelisco_-_Premier_Padel_2026_01.jpg"
+    }
+  ],
+  "badminton": [
+    {
+      "image_path": "assets/events/sport-badminton-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Olympics_2012_Mixed_Doubles_Final.jpg/960px-Olympics_2012_Mixed_Doubles_Final.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Peter · CC BY-SA 2.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Olympics_2012_Mixed_Doubles_Final.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-badminton-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Yonex_IFB_2013_-_Eightfinal_-_Line_Damkj%C3%A6r_Kruse_-_Marie_R%C3%B8pke_%E2%80%94_Jang_Ye-na_-_Kim_So-youngi_08.jpg/960px-Yonex_IFB_2013_-_Eightfinal_-_Line_Damkj%C3%A6r_Kruse_-_Marie_R%C3%B8pke_%E2%80%94_Jang_Ye-na_-_Kim_So-youngi_08.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Pierre-Yves Beaudouin · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Yonex_IFB_2013_-_Eightfinal_-_Line_Damkj%C3%A6r_Kruse_-_Marie_R%C3%B8pke_%E2%80%94_Jang_Ye-na_-_Kim_So-youngi_08.jpg"
+    }
+  ],
+  "swimming": [
+    {
+      "image_path": "assets/events/sport-swimming-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Public_Swimming_Pool_in_Melbourne_VIC_Australia.jpg/960px-Public_Swimming_Pool_in_Melbourne_VIC_Australia.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: KeepActive Australia from Melbourne, VIC, Australia · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Public_Swimming_Pool_in_Melbourne_VIC_Australia.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-swimming-2.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Indoor_Swimming_Pool.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "image_credit": "Photo: www.localfitness.com.au · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Indoor_Swimming_Pool.JPG"
+    }
+  ],
+  "golf": [
+    {
+      "image_path": "assets/events/sport-golf-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Riverwalk_Golf_Club_Driving_range.jpg/960px-Riverwalk_Golf_Club_Driving_range.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Bernard Gagnon · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Riverwalk_Golf_Club_Driving_range.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-golf-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Sky_Range_elevated_golf_driving_range.jpg/960px-Sky_Range_elevated_golf_driving_range.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Kbseah · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Sky_Range_elevated_golf_driving_range.jpg"
+    }
+  ],
+  "skate": [
+    {
+      "image_path": "assets/events/sport-skate-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Skateboarder_jumping_off_a_ledge_at_Skatepark_des_Ursulines_in_Brussels_%28DSCF4486%29.jpg/960px-Skateboarder_jumping_off_a_ledge_at_Skatepark_des_Ursulines_in_Brussels_%28DSCF4486%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Trougnouf · CC BY 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Skateboarder_jumping_off_a_ledge_at_Skatepark_des_Ursulines_in_Brussels_(DSCF4486).jpg"
+    }
+  ],
+  "bowling": [
+    {
+      "image_path": "assets/events/sport-bowling-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/5-pin_bowling_at_Family_Fun_Centre%2C_North_Kamloops_BC.jpg/960px-5-pin_bowling_at_Family_Fun_Centre%2C_North_Kamloops_BC.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Alan Levine · CC BY 2.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:5-pin_bowling_at_Family_Fun_Centre,_North_Kamloops_BC.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-bowling-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Candlepin_ball_about_to_hit_remaining_pins%2C_Bayberry_2026-02-28.jpg/960px-Candlepin_ball_about_to_hit_remaining_pins%2C_Bayberry_2026-02-28.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Peter Cooper Jr. · CC0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Candlepin_ball_about_to_hit_remaining_pins,_Bayberry_2026-02-28.jpg"
+    }
+  ],
+  "ice_skating": [
+    {
+      "image_path": "assets/events/sport-ice_skating-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Tsukisamu_Indoor_Skating_Rink_01.jpg/960px-Tsukisamu_Indoor_Skating_Rink_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Wakuna99 · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Tsukisamu_Indoor_Skating_Rink_01.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-ice_skating-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Tsukisamu_Indoor_Skating_Rink_03.jpg/960px-Tsukisamu_Indoor_Skating_Rink_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Wakuna99 · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Tsukisamu_Indoor_Skating_Rink_03.jpg"
+    }
+  ],
+  "surfing": [
+    {
+      "image_path": "assets/events/sport-surfing-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Flowrider_Voyager_of_the_Seas_2023.jpg/960px-Flowrider_Voyager_of_the_Seas_2023.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Larry D. Moore · CC BY 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Flowrider_Voyager_of_the_Seas_2023.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-surfing-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Surf_s_Up_Zone_1.jpg/960px-Surf_s_Up_Zone_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Tozpithan · CC0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Surf_s_Up_Zone_1.jpg"
+    }
+  ],
+  "trampoline": [
+    {
+      "image_path": "assets/events/sport-trampoline-1.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/VAUNCE_trampoline_park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "image_credit": "Photo: Vaunce · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:VAUNCE_trampoline_park.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-trampoline-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Trampoline_in_Euroupe.jpg/960px-Trampoline_in_Euroupe.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: DrSmartypants4 · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Trampoline_in_Euroupe.jpg"
+    }
+  ],
+  "archery": [
+    {
+      "image_path": "assets/events/sport-archery-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Scioto_Grove_-_Archery_Range_Target_1.jpg/960px-Scioto_Grove_-_Archery_Range_Target_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Sixflashphoto · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Scioto_Grove_-_Archery_Range_Target_1.jpg"
+    }
+  ],
+  "football": [
+    {
+      "image_path": "assets/events/sport-football-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/2026_AFC_Futsal_Asian_Cup%2C_Korea_Republic_vs_Kyrgyzstan_08.jpg/960px-2026_AFC_Futsal_Asian_Cup%2C_Korea_Republic_vs_Kyrgyzstan_08.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Medelam · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:2026_AFC_Futsal_Asian_Cup,_Korea_Republic_vs_Kyrgyzstan_08.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-football-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/2026_AFC_Futsal_Asian_Cup%2C_Korea_Republic_vs_Kyrgyzstan_02.jpg/960px-2026_AFC_Futsal_Asian_Cup%2C_Korea_Republic_vs_Kyrgyzstan_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Medelam · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:2026_AFC_Futsal_Asian_Cup,_Korea_Republic_vs_Kyrgyzstan_02.jpg"
+    }
+  ],
+  "karting": [
+    {
+      "image_path": "assets/events/sport-karting-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/28/Go-kart_course.jpg/960px-Go-kart_course.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Jaireeodell · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Go-kart_course.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-karting-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Go-kart_track%2C_St_John%2C_Jersey.jpg/960px-Go-kart_track%2C_St_John%2C_Jersey.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Danrok · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Go-kart_track,_St_John,_Jersey.jpg"
+    }
+  ],
+  "pilates": [
+    {
+      "image_path": "assets/events/sport-pilates-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Pilates_01.jpg/960px-Pilates_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: J. Vílchez · Public domain · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Pilates_01.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-pilates-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Pilates_reformer.jpg/960px-Pilates_reformer.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Maddi Bazzocco · CC0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Pilates_reformer.jpg"
+    }
+  ],
+  "basketball": [
+    {
+      "image_path": "assets/events/sport-basketball-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/2024-25_Boston_University_basketball_players_before_a_game.jpg/960px-2024-25_Boston_University_basketball_players_before_a_game.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Kenneth C. Zirkel · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:2024-25_Boston_University_basketball_players_before_a_game.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-basketball-2.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Basketball_game_brings_KFOR%2C_Kosovo_players_together_DVIDS235502.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "image_credit": "Photo: Sgt. 1st Class Mike Hagburg · Public domain · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Basketball_game_brings_KFOR,_Kosovo_players_together_DVIDS235502.jpg"
+    }
+  ],
+  "dance": [
+    {
+      "image_path": "assets/events/sport-dance-1.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Social_Dancing_Group_Class.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "image_credit": "Photo: ToddCombs · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Social_Dancing_Group_Class.jpg"
+    }
+  ],
+  "racquet": [
+    {
+      "image_path": "assets/events/sport-racquet-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Jupitersports_squash_court_constructed.jpg/960px-Jupitersports_squash_court_constructed.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Jupitersports · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Jupitersports_squash_court_constructed.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-racquet-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Squash_court.JPG/960px-Squash_court.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: No machine-readable author provided. Jensbn~commonswiki assumed (based on copyright claims). · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Squash_court.JPG"
+    }
+  ],
+  "yoga": [
+    {
+      "image_path": "assets/events/sport-yoga-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Yoga_Studio_in_Canoa.jpg/960px-Yoga_Studio_in_Canoa.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: SurfGidget · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Yoga_Studio_in_Canoa.jpg"
+    }
+  ],
+  "fitness": [
+    {
+      "image_path": "assets/events/sport-fitness-1.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Step_Group_Fitness_Class.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "image_credit": "Photo: www.localfitness.com.au · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Step_Group_Fitness_Class.JPG"
+    },
+    {
+      "image_path": "assets/events/sport-fitness-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Vandenberg_CrossFit_group_a_product_of_resilience_and_commitment_to_fitness_%287207523%29.jpg/960px-Vandenberg_CrossFit_group_a_product_of_resilience_and_commitment_to_fitness_%287207523%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: U.S. Space Force photo by null · Public domain · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:Vandenberg_CrossFit_group_a_product_of_resilience_and_commitment_to_fitness_(7207523).jpg"
+    }
+  ],
+  "sports_ground": [
+    {
+      "image_path": "assets/events/sport-sports_ground-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/All-weather_running_track.jpg/960px-All-weather_running_track.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Mk2010 · CC BY-SA 4.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:All-weather_running_track.jpg"
+    },
+    {
+      "image_path": "assets/events/sport-sports_ground-2.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/RLZ_Athletics_stadium_05.JPG/960px-RLZ_Athletics_stadium_05.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: Neukoln · CC BY-SA 3.0 · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:RLZ_Athletics_stadium_05.JPG"
+    }
+  ],
+  "muay_thai": [
+    {
+      "image_path": "assets/events/sport-muay_thai-1.jpg",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/U_S_Marines%2C_Royal_Thai_Navy_Conduct_Train_in_Muay_Thai_Kickboxing_During_CARAT_Thailand_2026_%289809307%29.jpg/960px-U_S_Marines%2C_Royal_Thai_Navy_Conduct_Train_in_Muay_Thai_Kickboxing_During_CARAT_Thailand_2026_%289809307%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_credit": "Photo: U.S. Navy photo by Petty Officer 1st Class Dakota David · Public domain · Wikimedia Commons",
+      "image_source": "https://commons.wikimedia.org/wiki/File:U_S_Marines,_Royal_Thai_Navy_Conduct_Train_in_Muay_Thai_Kickboxing_During_CARAT_Thailand_2026_(9809307).jpg"
+    }
+  ]
+}

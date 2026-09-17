@@ -230,6 +230,7 @@ export type BookingView = { b: Booking; e: Event; ended: boolean };
 function bookingBubble({ b, e, ended }: BookingView, lang: Lang) {
   const m = M[lang];
   const s = styleOf(e);
+  const plan = b.kind === "plan";
   return {
     type: "bubble",
     size: "kilo",
@@ -245,7 +246,7 @@ function bookingBubble({ b, e, ended }: BookingView, lang: Lang) {
         { type: "text", text: `📍 ${venue(e, lang)}`, size: "xs", color: MUTED, wrap: true },
         {
           type: "text",
-          text: `🎟️ ${m.ticketsN(b.tickets)} · ${price(e, lang)} · ${b.code}${ended ? ` · ${m.ended}` : ""}`,
+          text: `${plan ? m.planLine : `🎟️ ${m.ticketsN(b.tickets)} · ${price(e, lang)} · ${b.code}`}${ended ? ` · ${m.ended}` : ""}`,
           size: "xs",
           color: ended ? MUTED : GREEN_TEXT,
           wrap: true,
@@ -266,9 +267,14 @@ function bookingBubble({ b, e, ended }: BookingView, lang: Lang) {
               spacing: "sm",
               contents: [button(m.ride, `action=ride&id=${e.id}&lang=${lang}`, GREEN), button(m.map, `action=map&id=${e.id}&lang=${lang}`)],
             },
-            button(m.editTickets, `action=edit&c=${b.code}&lang=${lang}`),
-            ...(b.tickets > 1 ? [button(m.cancelSome, `action=cancelsome&c=${b.code}&lang=${lang}`)] : []),
-            button(m.cancelBooking, `action=cancel&c=${b.code}&lang=${lang}`, RED),
+            // A walk-in event in the calendar has no tickets to change: it can only be removed.
+            ...(plan
+              ? [button(m.removePlan, `action=cancel&c=${b.code}&lang=${lang}`, RED)]
+              : [
+                  button(m.editTickets, `action=edit&c=${b.code}&lang=${lang}`),
+                  ...(b.tickets > 1 ? [button(m.cancelSome, `action=cancelsome&c=${b.code}&lang=${lang}`)] : []),
+                  button(m.cancelBooking, `action=cancel&c=${b.code}&lang=${lang}`, RED),
+                ]),
           ],
     },
   };
@@ -307,9 +313,11 @@ export function cancelSomePicker(b: Booking, e: Event, lang: Lang) {
 
 export function cancelConfirm(b: Booking, e: Event, lang: Lang) {
   const m = M[lang];
+  const plan = b.kind === "plan";
+  const question = plan ? m.removeQ : m.cancelQ;
   return {
     type: "flex",
-    altText: m.cancelQ,
+    altText: question,
     contents: {
       type: "bubble",
       size: "kilo",
@@ -319,11 +327,11 @@ export function cancelConfirm(b: Booking, e: Event, lang: Lang) {
         layout: "vertical",
         spacing: "sm",
         contents: [
-          { type: "text", text: m.cancelQ, weight: "bold", size: "lg", color: TEXT, wrap: true },
+          { type: "text", text: question, weight: "bold", size: "lg", color: TEXT, wrap: true },
           { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}`, color: GREEN_TEXT, weight: "bold", wrap: true, margin: "md" },
-          { type: "text", text: `${when(e, lang)} · ${m.ticketsN(b.tickets)}`, size: "xs", color: MUTED, wrap: true },
-          { ...button(b.tickets > 1 ? m.cancelAllN(b.tickets) : m.yesCancel, `action=cancelyes&c=${b.code}&lang=${lang}`, RED), margin: "lg" },
-          ...(b.tickets > 1 ? [button(m.cancelSome, `action=cancelsome&c=${b.code}&lang=${lang}`)] : []),
+          { type: "text", text: plan ? when(e, lang) : `${when(e, lang)} · ${m.ticketsN(b.tickets)}`, size: "xs", color: MUTED, wrap: true },
+          { ...button(plan ? m.yesRemove : b.tickets > 1 ? m.cancelAllN(b.tickets) : m.yesCancel, `action=cancelyes&c=${b.code}&lang=${lang}`, RED), margin: "lg" },
+          ...(!plan && b.tickets > 1 ? [button(m.cancelSome, `action=cancelsome&c=${b.code}&lang=${lang}`)] : []),
           button(m.keep, `action=bookings&lang=${lang}`),
         ],
       },
@@ -364,10 +372,10 @@ export function calendarView(views: BookingView[], lang: Lang) {
           cornerRadius: "8px",
           backgroundColor: SOFT,
           flex: 1,
-          action: { type: "uri", label: "Google Calendar", uri: googleCalendarUrl(e, b.code, b.tickets, lang) },
+          action: { type: "uri", label: "Google Calendar", uri: googleCalendarUrl(e, b.code, b.tickets, lang, b.kind === "plan") },
           contents: [
             { type: "text", text: hm.format(new Date(e.start_datetime)), size: "xs", color: MUTED, flex: 0 },
-            { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)} · ${m.ticketsN(b.tickets)}`, size: "xs", color: ended ? MUTED : TEXT, wrap: true, flex: 1 },
+            { type: "text", text: `${styleOf(e).emoji} ${title(e, lang)}${b.kind === "plan" ? " · 🚶" : ` · ${m.ticketsN(b.tickets)}`}`, size: "xs", color: ended ? MUTED : TEXT, wrap: true, flex: 1 },
             { type: "text", text: "＋📅", size: "xs", color: GREEN_TEXT, flex: 0 },
           ],
         },
@@ -380,8 +388,8 @@ export function calendarView(views: BookingView[], lang: Lang) {
               paddingAll: "8px",
               cornerRadius: "8px",
               backgroundColor: RED,
-              action: { type: "postback", label: m.cancelShort, data: `action=cancel&c=${b.code}&lang=${lang}`, displayText: `${m.cancelShort} ${title(e, lang)}` },
-              contents: [{ type: "text", text: m.cancelShort, size: "xxs", color: "#ffffff", weight: "bold", align: "center" }],
+              action: { type: "postback", label: b.kind === "plan" ? m.removeShort : m.cancelShort, data: `action=cancel&c=${b.code}&lang=${lang}`, displayText: `${b.kind === "plan" ? m.removeShort : m.cancelShort} ${title(e, lang)}` },
+              contents: [{ type: "text", text: b.kind === "plan" ? m.removeShort : m.cancelShort, size: "xxs", color: "#ffffff", weight: "bold", align: "center" }],
             }]),
       ],
     });
